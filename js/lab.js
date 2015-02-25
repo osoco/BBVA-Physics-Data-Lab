@@ -114,7 +114,7 @@ function init() {
     // camera
     var cameraFOV = 60;
     var cameraAspectRatio = window.innerWidth / window.innerHeight;
-    var cameraNearPlane = 1;
+    var cameraNearPlane = 0.1;
     var cameraFarPlane = 15000;
     camera = new THREE.PerspectiveCamera(cameraFOV, cameraAspectRatio, cameraNearPlane, cameraFarPlane);
     initCamera(0, 70, 2000);
@@ -136,7 +136,18 @@ function init() {
     renderer = new THREE.WebGLRenderer({precision: "mediump", antialias: antialias});
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.autoClear = false;
-
+    
+    onResize = function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      };
+      window.addEventListener('resize', onResize, false);
+      
+    //leap-hands
+    initLeap()
+    initControls()
+       
     // lights
     if (!isMobile){
         var ambientLight = new THREE.AmbientLight(0x555557);
@@ -226,8 +237,12 @@ function init() {
 }
 
 function loop() {
-    requestAnimationFrame( loop );
+	vrControls.update();
+    vrEffect.render(scene, camera);
+	requestAnimationFrame( loop );
+    //controls.update();
     renderer.render( scene, camera );
+    
 }
 
 function addStaticBox(size, position, rotation, spec) {
@@ -347,7 +362,9 @@ function populateWorld() {
         date = dataset[categories[0]].stats[day].date;
         y = (day - fromDay + 1) * yGapBetweenDays;
 
-        for (var categoryIdx = 0; categoryIdx < categories.length; categoryIdx++) {
+        //Performance only one category
+        //for (var categoryIdx = 0; categoryIdx < categories.length; categoryIdx++) {
+        for (var categoryIdx = 0; categoryIdx < 1; categoryIdx++) {
             var category = categories[categoryIdx];
             var cubesByCategoryAndDay = dataset[category].stats[day].cube;
             
@@ -1107,3 +1124,56 @@ function setupSampleFilters() {
 init();
 loop();
 setupSampleFilters();
+
+
+function initLeap() {
+	  Leap.loop();
+
+	  // Docs: http://leapmotion.github.io/leapjs-plugins/main/transform/
+	  Leap.loopController.use('transform', {
+
+	    // This matrix flips the x, y, and z axis, scales to meters, and offsets the hands by -8cm.
+	    vr: true,
+
+	    // This causes the camera's matrix transforms (position, rotation, scale) to be applied to the hands themselves
+	    // The parent of the bones remain the scene, allowing the data to remain in easy-to-work-with world space.
+	    // (As the hands will usually interact with multiple objects in the scene.)
+	    effectiveParent: camera
+
+	  });
+
+	  // Docs: http://leapmotion.github.io/leapjs-plugins/main/bone-hand/
+	  Leap.loopController.use('boneHand', {
+
+	    // If you already have a scene or want to create it yourself, you can pass it in here
+	    // Alternatively, you can pass it in whenever you want by doing
+	    // Leap.loopController.plugins.boneHand.scene = myScene.
+	    scene: scene,
+
+	    // Display the arm
+	    arm: true
+
+	  });
+}
+
+function initControls() {
+    //Controls
+    //controls = new THREE.LeapPinchRotateControls( camera , controller );
+
+	// Moves (translates and rotates) the camera
+	  vrControls = new THREE.VRControls(camera);
+
+	  vrEffect = new THREE.VREffect(renderer);
+
+
+	  onkey = function(event) {
+	    if (event.key === 'z') {
+	      vrControls.zeroSensor();
+	    }
+	    if (event.key === 'f') {
+	      return vrEffect.setFullScreen(true);
+	    }
+	  };
+
+	  window.addEventListener("keypress", onkey, true);
+}
