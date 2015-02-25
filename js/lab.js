@@ -236,15 +236,6 @@ function init() {
     initOimoPhysics();
 }
 
-function loop() {
-	vrControls.update();
-    vrEffect.render(scene, camera);
-	requestAnimationFrame( loop );
-    //controls.update();
-    renderer.render( scene, camera );
-    
-}
-
 function addStaticBox(size, position, rotation, spec) {
     var mesh;
     if(spec) mesh = new THREE.Mesh( geos.box, mats.filter );
@@ -1165,7 +1156,6 @@ function initControls() {
 
 	  vrEffect = new THREE.VREffect(renderer);
 
-
 	  onkey = function(event) {
 	    if (event.key === 'z') {
 	      vrControls.zeroSensor();
@@ -1177,3 +1167,13 @@ function initControls() {
 
 	  window.addEventListener("keypress", onkey, true);
 }
+
+function loop() {
+	vrControls.update();
+    vrEffect.render(scene, camera);
+	requestAnimationFrame( loop );
+    //controls.update();
+    //renderer.render( scene, camera );
+    
+}
+
