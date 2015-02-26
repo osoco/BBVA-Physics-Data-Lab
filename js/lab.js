@@ -1116,6 +1116,93 @@ init();
 loop();
 setupSampleFilters();
 
+function radianToDegree(radian) {
+	return radian * (180 / Math.PI);
+}
+
+function createBodyFromMesh(mesh) {
+	if( mesh.geometry instanceof THREE.SphereGeometry ){
+		var options	= {
+			type	:'sphere',
+			size	: [mesh.geometry.parameters.radius * mesh.scale.x],
+			pos	: mesh.position.toArray(),
+			rot	: mesh.rotation.toArray().slice(0,3).map(radianToDegree),
+			world	: world,
+			move	: true
+		}
+		// actually build the OIMO.Body
+	} else {
+		var options	= {
+			type	:'box',
+			size	: [
+				mesh.geometry.parameters.radiusTop*2, 
+				mesh.geometry.parameters.height ,
+				mesh.geometry.parameters.radiusTop*2,
+			],
+			pos	: mesh.position.toArray(),
+			world	: world,
+			move	: true
+		}
+		console.log(options.size)
+	}
+	var body	= new OIMO.Body(options)
+	return body
+}
+
+function updateBodyFromMeshPosition(mesh, body) {
+	body.setPosition(mesh.position);
+	body.setQuaternion(mesh.quaternion);
+}
+
+function HandMeshOimizer() {
+	var self = this
+	this.hands = {}
+	
+	
+	this.updateHand = function(handMesh) {
+		if(this.hands[getHandMeshId(handMesh)]) {
+			console.log("Updating hand bodies position")
+			updateHandBodiesPosition(handMesh, this.hands[getHandMeshId(handMesh)])
+		} else {
+			console.log("Creating hand bodies")
+			this.hands[getHandMeshId(handMesh)] = []
+			createBodiesForHand(handMesh)
+		}
+	}
+	
+	this.removeHand = function(handMesh) {
+		console.log("Removing hand bodies")
+		this.hands[getHandMeshId(handMesh)] = null
+	}
+	
+	function updateHandBodiesPosition(handMesh, bodies) {
+		for(var fingerIndex = 0; fingerIndex < handMesh.fingerMeshes.length; fingerIndex++) {
+			var finger = handMesh.fingerMeshes[fingerIndex]
+			var fingerBodies = []
+			for(var fingerMeshIndex = 0; fingerMeshIndex < finger.length; fingerMeshIndex++) {
+				updateBodyFromMeshPosition(finger[fingerMeshIndex], bodies[fingerIndex][fingerMeshIndex])
+			}
+		}
+	}
+	
+	function createBodiesForHand(handMesh) {
+		for(var fingerIndex = 0; fingerIndex < handMesh.fingerMeshes.length; fingerIndex++) {
+			var finger = handMesh.fingerMeshes[fingerIndex]
+			var fingerBodies = []
+			for(var fingerMeshIndex = 0; fingerMeshIndex < finger.length; fingerMeshIndex++) {
+				fingerBodies.push(createBodyFromMesh(finger[fingerMeshIndex]))
+			}
+			self.hands[getHandMeshId(handMesh)].push(fingerBodies)
+		}
+	}
+	
+	function getHandMeshId(handMesh) {
+		return handMesh.armBones[0].id
+	}
+	
+}
+
+var handOimizer = new HandMeshOimizer()
 
 function initLeap() {
 	  Leap.loop();
@@ -1133,17 +1220,22 @@ function initLeap() {
 
 	  });
 
-	  // Docs: http://leapmotion.github.io/leapjs-plugins/main/bone-hand/
+	   // Docs: http://leapmotion.github.io/leapjs-plugins/main/bone-hand/
 	  Leap.loopController.use('boneHand', {
 
 	    // If you already have a scene or want to create it yourself, you can pass it in here
 	    // Alternatively, you can pass it in whenever you want by doing
 	    // Leap.loopController.plugins.boneHand.scene = myScene.
 	    scene: scene,
-
+	    scale: 100000,
 	    // Display the arm
-	    arm: true
-
+	    arm: true,
+	    onHandMeshUpdated : function(handMesh ) {
+	    	handOimizer.updateHand(handMesh)
+	    },
+	    onHandMeshLost : function(handMesh ) {
+	    	handOimizer.removeHand(handMesh)
+	    }
 	  });
 }
 

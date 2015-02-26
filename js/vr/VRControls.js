@@ -53,8 +53,8 @@ THREE.VRControls = function ( object, callback ) {
 		}
 
 		if ( state.position !== null ) {
-
-			object.position.copy( state.position );
+			object.position.copy( 
+					{x:state.position.x*1000 ,y:state.position.y*1000 ,z:state.position.z*1000 } );
 
 		}
 
