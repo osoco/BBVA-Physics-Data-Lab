@@ -47,10 +47,10 @@ $(function() {
       
       onkey = function(event) {
           if (event.key === 'm') {
-            toggleAnalysis()
+        	toggleAnalysis()
             threeMenu.open()
             open = true
-        	$("#menu").show()
+            $("#menu").show()
         	$("#lab").hide()
           }
         };
@@ -84,15 +84,17 @@ $(function() {
         		var periodCopy = period 
         		return function() {
         			open = false
-        			selectPeriod(periods[periodCopy])
         			toggleAnalysis()
+        			selectPeriod(periods[periodCopy])
         			$("#menu").hide()
                  	$("#lab").show()
-                 	
-        		 }
+                }
             })())
             periodMenuSelect.addMenuItem(periodMenuAction)
         }
+        
+        var peridodBackMenuAction = threeMenu.createActionMenuItem('img/Back.png', zipCodeMenuSelect, function() {}) 
+        periodMenuSelect.addMenuItem(peridodBackMenuAction)
         
         threeMenu.addMenuSelect(zipCodeMenuSelect)
         threeMenu.addMenuSelect(periodMenuSelect)
@@ -100,5 +102,9 @@ $(function() {
         threeMenu.open()
         open = true
     }
+    
+    // DEBUG
+    menuCamera = camera
+    
 })
     

@@ -903,17 +903,22 @@ function hideControls() {
 }
 
 function toggleAnalysis() {
-    if (analysisStarted) {
-        document.getElementById('pause-button').style.display = 'none';
-        document.getElementById('start-button').style.display = 'block';
-    } else {
-        if (bodys.length == 0) {
-            populateWorld();
-        }
-        document.getElementById('start-button').style.display = 'none';
-        document.getElementById('pause-button').style.display = 'block';        
+    analysisStarted ? stopAnalysis() : startAnalysis()
+}
+
+function stopAnalysis() {
+	document.getElementById('pause-button').style.display = 'none';
+    document.getElementById('start-button').style.display = 'block';
+	analysisStarted = false
+}
+
+function startAnalysis() {
+	if (bodys.length == 0) {
+        populateWorld();
     }
-    analysisStarted = !analysisStarted;    
+    document.getElementById('start-button').style.display = 'none';
+    document.getElementById('pause-button').style.display = 'block';
+	analysisStarted = true
 }
 
 function showTools() {
