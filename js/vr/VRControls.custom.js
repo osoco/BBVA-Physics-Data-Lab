@@ -3,7 +3,7 @@
  * @author mrdoob / http://mrdoob.com
  */
 
-THREE.VRControls = function ( object, callback ) {
+THREE.VRControls = function ( object, includePosition, scale, callback ) {
 
 	var vrInput;
 
@@ -52,9 +52,12 @@ THREE.VRControls = function ( object, callback ) {
 
 		}
 
-		if ( state.position !== null ) {
-			object.position.copy( 
-					{x:state.position.x*1000 ,y:state.position.y*1000 ,z:state.position.z*1000 } );
+		if ( includePosition && state.position !== null ) {
+			object.position.copy({
+				x : state.position.x*scale ,
+				y : state.position.y*scale ,
+				z : state.position.z*scale 
+			});
 
 		}
 

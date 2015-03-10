@@ -574,7 +574,9 @@ var rayTest = function () {
 // UI Controls
 
 function getCurrentDataset() {
-    return eval(datasets[zipcode]);;
+    console.log(datasets[zipcode])
+    console.log(eval(datasets[zipcode]))
+	return eval(datasets[zipcode]);;
 }
 
 function toggleInspector() {
@@ -1244,7 +1246,7 @@ function initControls() {
     //controls = new THREE.LeapPinchRotateControls( camera , controller );
 
 	// Moves (translates and rotates) the camera
-	  vrControls = new THREE.VRControls(camera);
+	  vrControls = new THREE.VRControls(camera, true, 1000);
 
 	  vrEffect = new THREE.VREffect(renderer);
 
@@ -1268,4 +1270,3 @@ function loop() {
     //renderer.render( scene, camera );
     
 }
-
