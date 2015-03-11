@@ -1,16 +1,16 @@
   /*
   Options: {minimunPinchStrength, pinchTimeToEmitEvent}
-  Emits: {on + fingerName + Pinched }
+  Emits: "${fingerName}Pinched"
   */
 ;(function() {
     var DEFAULT_MINIMUN_PINCH_STRENGTH = 0.9
     var DEFAULT_PINCH_TIME_TO_EMIT_EVENT = 1000
     
-    var nameMap = ["Thumb", "Index", "Middle", "Ring", "Pinky"]
+    var nameMap = ["thumb", "index", "middle", "ring", "pinky"]
     var pinchData = {}
     
     var minimunPinchStrength = 0
-    var pinchTimeToEmitEvent = 1000
+    var pinchTimeToEmitEvent = 0
     
     function pinchInfo(options) {
        initializeOptions(options)
@@ -23,7 +23,7 @@
 			       var handPinchData = pinchData[hand.id] = pinchData[hand.id] || {} 
 			       addPinchingDataToHand(hand, handPinchData)
 			       emitEventIfNeccesary.call(this, handPinchData, currentTime)
-			       //console.log(hand.pincher + ":" + hand.startPinching)
+			       console.log(hand.pincher + ":" + hand.startPinching)
 			   }
 		   }
 		}
@@ -31,7 +31,7 @@
 	
 	function initializeOptions(options) {
 	   minimunPinchStrength = options.minimunPinchStrength || DEFAULT_MINIMUN_PINCH_STRENGTH
-	   pinchTime = options.pinchTime || DEFAULT_PINCH_TIME_TO_EMIT_EVENT
+	   pinchTimeToEmitEvent = options.pinchTimeToEmitEvent || DEFAULT_PINCH_TIME_TO_EMIT_EVENT
 	}
 	
 	function addPinchingDataToHand(hand, handData){
@@ -75,7 +75,7 @@
         if( handPinchData.pincher && !handPinchData.eventIsEmittedYet && isTimeToEmitEvent(handPinchData.startPinching, currentTime)) {
             
             handPinchData.eventIsEmittedYet = true
-            this.emit('on' + handPinchData.pincher + 'Pinched')
+            this.emit(handPinchData.pincher + 'Pinched')
         }
     }
     

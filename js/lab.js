@@ -1168,17 +1168,17 @@ function HandMeshOimizer() {
 	
 	this.updateHand = function(handMesh) {
 		if(this.hands[getHandMeshId(handMesh)]) {
-			console.log("Updating hand bodies position")
+			//console.log("Updating hand bodies position")
 			updateHandBodiesPosition(handMesh, this.hands[getHandMeshId(handMesh)])
 		} else {
-			console.log("Creating hand bodies")
+			//console.log("Creating hand bodies")
 			this.hands[getHandMeshId(handMesh)] = []
 			createBodiesForHand(handMesh)
 		}
 	}
 	
 	this.removeHand = function(handMesh) {
-		console.log("Removing hand bodies")
+		//console.log("Removing hand bodies")
 		this.hands[getHandMeshId(handMesh)] = null
 	}
 	
@@ -1212,8 +1212,8 @@ function HandMeshOimizer() {
 var handOimizer = new HandMeshOimizer()
 
 function initLeap() {
-	  Leap.loop();
-
+	  var controller = Leap.loop({frameEventName: 'animationFrame'});
+	  
 	  // Docs: http://leapmotion.github.io/leapjs-plugins/main/transform/
 	  Leap.loopController.use('transform', {
 
@@ -1237,6 +1237,7 @@ function initLeap() {
 	    scale: 100000,
 	    // Display the arm
 	    arm: true,
+	    
 	    onHandMeshUpdated : function(handMesh ) {
 	    	handOimizer.updateHand(handMesh)
 	    },
@@ -1244,6 +1245,20 @@ function initLeap() {
 	    	handOimizer.removeHand(handMesh)
 	    }
 	  });
+	  
+	  Leap.loopController.use('pinchInfo', {pinchTimeToEmitEvent:1000}).on('indexPinched', function() {
+		  console.log("index")
+	  }).on('middlePinched', function() {
+		  toggleAnalysis()
+          threeMenu.open()
+          open = true
+          $("#menu").show()
+      	  $("#lab").hide()
+	  }).on('ringPinched', function() {
+		  toggleAnalysis()
+      }).on('pinkyPinched', function() {
+		  console.log("pinky")
+	  })
 }
 
 function initControls() {

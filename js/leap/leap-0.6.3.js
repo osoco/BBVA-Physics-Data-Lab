@@ -1,9 +1,9 @@
 /*!                                                              
- * LeapJS v0.6.0                                                  
+ * LeapJS v0.6.3                                                  
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
  * Copyright 2013 LeapMotion, Inc. and other contributors                      
- * Released under the BSD-2-Clause license                                     
+ * Released under the Apache-2.0 license                                     
  * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt                 
  */
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
@@ -27,6 +27,7 @@ var Bone = module.exports = function(finger, data) {
   * * 1 -- proximal
   * * 2 -- medial
   * * 3 -- distal
+  * * 4 -- arm
   *
   * @member type
   * @type {number}
@@ -198,16 +199,29 @@ var BaseConnection = module.exports = function(opts) {
   this.opts = _.defaults(opts || {}, {
     host : '127.0.0.1',
     enableGestures: false,
-    port: 6437,
+    scheme: this.getScheme(),
+    port: this.getPort(),
     background: false,
+    optimizeHMD: false,
     requestProtocolVersion: BaseConnection.defaultProtocolVersion
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
+  this.scheme = this.opts.scheme;
   this.protocolVersionVerified = false;
+  this.background = null;
+  this.optimizeHMD = null;
   this.on('ready', function() {
     this.enableGestures(this.opts.enableGestures);
     this.setBackground(this.opts.background);
+    this.setOptimizeHMD(this.opts.optimizeHMD);
+
+    if (this.opts.optimizeHMD){
+      console.log("Optimized for head mounted display usage.");
+    }else {
+      console.log("Optimized for desktop usage.");
+    }
+
   });
 };
 
@@ -215,14 +229,32 @@ var BaseConnection = module.exports = function(opts) {
 BaseConnection.defaultProtocolVersion = 6;
 
 BaseConnection.prototype.getUrl = function() {
-  return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
+  return this.scheme + "//" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
 }
+
+
+BaseConnection.prototype.getScheme = function(){
+  return 'ws:'
+}
+
+BaseConnection.prototype.getPort = function(){
+  return 6437
+}
+
 
 BaseConnection.prototype.setBackground = function(state) {
   this.opts.background = state;
   if (this.protocol && this.protocol.sendBackground && this.background !== this.opts.background) {
     this.background = this.opts.background;
     this.protocol.sendBackground(this, this.opts.background);
+  }
+}
+
+BaseConnection.prototype.setOptimizeHMD = function(state) {
+  this.opts.optimizeHMD = state;
+  if (this.protocol && this.protocol.sendOptimizeHMD && this.optimizeHMD !== this.opts.optimizeHMD) {
+    this.optimizeHMD = this.opts.optimizeHMD;
+    this.protocol.sendOptimizeHMD(this, this.opts.optimizeHMD);
   }
 }
 
@@ -274,6 +306,7 @@ BaseConnection.prototype.disconnect = function(allowReconnect) {
   delete this.socket;
   delete this.protocol;
   delete this.background; // This is not persisted when reconnecting to the web socket server
+  delete this.optimizeHMD;
   delete this.focusedState;
   if (this.connected) {
     this.connected = false;
@@ -325,8 +358,6 @@ BaseConnection.prototype.reportFocus = function(state) {
 }
 
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
-
-
 },{"../protocol":15,"events":21,"underscore":24}],4:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
@@ -343,12 +374,35 @@ _.extend(BrowserConnection.prototype, BaseConnection.prototype);
 
 BrowserConnection.__proto__ = BaseConnection;
 
+BrowserConnection.prototype.useSecure = function(){
+  return location.protocol === 'https:'
+}
+
+BrowserConnection.prototype.getScheme = function(){
+  return this.useSecure() ? 'wss:' : 'ws:'
+}
+
+BrowserConnection.prototype.getPort = function(){
+  return this.useSecure() ? 6436 : 6437
+}
+
 BrowserConnection.prototype.setupSocket = function() {
   var connection = this;
   var socket = new WebSocket(this.getUrl());
   socket.onopen = function() { connection.handleOpen(); };
   socket.onclose = function(data) { connection.handleClose(data['code'], data['reason']); };
   socket.onmessage = function(message) { connection.handleData(message.data) };
+  socket.onerror = function(error) {
+
+    // attempt to degrade to ws: after one failed attempt for older Leap Service installations.
+    if (connection.useSecure() && connection.scheme === 'wss:'){
+      connection.scheme = 'ws:';
+      connection.port = 6437;
+      connection.disconnect();
+      connection.connect();
+    }
+
+  };
   return socket;
 }
 
@@ -513,6 +567,11 @@ Controller.prototype.gesture = function(type, cb) {
  */
 Controller.prototype.setBackground = function(state) {
   this.connection.setBackground(state);
+  return this;
+}
+
+Controller.prototype.setOptimizeHMD = function(state) {
+  this.connection.setOptimizeHMD(state);
   return this;
 }
 
@@ -726,9 +785,21 @@ Controller.prototype.setupConnectionEvents = function() {
     }
   }
   // Delegate connection events
-  this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
+  this.connection.on('focus', function() { controller.emit('focus'); });
   this.connection.on('blur', function() { controller.emit('blur') });
-  this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+  this.connection.on('protocol', function(protocol) {
+
+    protocol.on('beforeFrameCreated', function(frameData){
+      controller.emit('beforeFrameCreated', frameData)
+    });
+
+    protocol.on('afterFrameCreated', function(frame, frameData){
+      controller.emit('afterFrameCreated', frame, frameData)
+    });
+
+    controller.emit('protocol', protocol); 
+  });
+
   this.connection.on('ready', function() {
 
     if (controller.checkVersion && !controller.inNode){
@@ -946,6 +1017,63 @@ Controller.plugins = function() {
   return _.keys(this._pluginFactories);
 };
 
+
+
+var setPluginCallbacks = function(pluginName, type, callback){
+  
+  if ( ['beforeFrameCreated', 'afterFrameCreated'].indexOf(type) != -1 ){
+    
+      // todo - not able to "unuse" a plugin currently
+      this.on(type, callback);
+      
+    }else {
+      
+      if (!this.pipeline) this.pipeline = new Pipeline(this);
+    
+      if (!this._pluginPipelineSteps[pluginName]) this._pluginPipelineSteps[pluginName] = [];
+
+      this._pluginPipelineSteps[pluginName].push(
+        
+        this.pipeline.addWrappedStep(type, callback)
+        
+      );
+      
+    }
+  
+};
+
+var setPluginMethods = function(pluginName, type, hash){
+  var klass;
+  
+  if (!this._pluginExtendedMethods[pluginName]) this._pluginExtendedMethods[pluginName] = [];
+
+  switch (type) {
+    case 'frame':
+      klass = Frame
+      break;
+    case 'hand':
+      klass = Hand
+      break;
+    case 'pointable':
+      klass = Pointable;
+      _.extend(Finger.prototype, hash);
+      _.extend(Finger.Invalid,   hash);
+      break;
+    case 'finger':
+      klass = Finger;
+      break;
+    default:
+      throw pluginName + ' specifies invalid object type "' + type + '" for prototypical extension'
+  }
+
+  _.extend(klass.prototype, hash);
+  _.extend(klass.Invalid, hash);
+  this._pluginExtendedMethods[pluginName].push([klass, hash])
+  
+}
+
+
+
 /*
  * Begin using a registered plugin.  The plugin's functionality will be added to all frames
  * returned by the controller (and/or added to the objects within the frame).
@@ -961,7 +1089,7 @@ Controller.plugins = function() {
  * @returns the controller
  */
 Controller.prototype.use = function(pluginName, options) {
-  var functionOrHash, pluginFactory, key, pluginInstance, klass;
+  var functionOrHash, pluginFactory, key, pluginInstance;
 
   pluginFactory = (typeof pluginName == 'function') ? pluginName : Controller._pluginFactories[pluginName];
 
@@ -981,42 +1109,26 @@ Controller.prototype.use = function(pluginName, options) {
   pluginInstance = pluginFactory.call(this, options);
 
   for (key in pluginInstance) {
+
     functionOrHash = pluginInstance[key];
 
     if (typeof functionOrHash === 'function') {
-      if (!this.pipeline) this.pipeline = new Pipeline(this);
-      if (!this._pluginPipelineSteps[pluginName]) this._pluginPipelineSteps[pluginName] = [];
-
-      this._pluginPipelineSteps[pluginName].push( this.pipeline.addWrappedStep(key, functionOrHash) );
+      
+      setPluginCallbacks.call(this, pluginName, key, functionOrHash);
+      
     } else {
-      if (!this._pluginExtendedMethods[pluginName]) this._pluginExtendedMethods[pluginName] = [];
-
-      switch (key) {
-        case 'frame':
-          klass = Frame
-          break;
-        case 'hand':
-          klass = Hand
-          break;
-        case 'pointable':
-          klass = Pointable;
-          _.extend(Finger.prototype, functionOrHash);
-          _.extend(Finger.Invalid,   functionOrHash);
-          break;
-        case 'finger':
-          klass = Finger;
-          break;
-        default:
-          throw pluginName + ' specifies invalid object type "' + key + '" for prototypical extension'
-      }
-
-      _.extend(klass.prototype, functionOrHash);
-      _.extend(klass.Invalid, functionOrHash);
-      this._pluginExtendedMethods[pluginName].push([klass, functionOrHash])
+      
+      setPluginMethods.call(this, pluginName, key, functionOrHash);
+      
     }
+
   }
+
   return this;
 };
+
+
+
 
 /*
  * Stop using a used plugin.  This will remove any of the plugin's pipeline methods (those called on every frame)
@@ -1085,6 +1197,7 @@ Dialog.prototype.createElement = function(){
 
   var dialog  = document.createElement('div');
   this.element.appendChild(dialog);
+  dialog.style.className = "leapjs-dialog";
   dialog.style.display = "inline-block";
   dialog.style.margin = "auto";
   dialog.style.padding = "8px";
@@ -1163,7 +1276,7 @@ Dialog.warnOutOfDate = function(params){
     },
 
 
-    message = "This site requires Leap Motion Tracking Beta, now available for developers." +
+    message = "This site requires Leap Motion Tracking V2." +
       "<button id='leapjs-accept-upgrade'  style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; vertical-align: baseline; margin-left: 16px;'>Upgrade</button>" +
       "<button id='leapjs-decline-upgrade' style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; vertical-align: baseline; margin-left: 8px; '>Not Now</button>";
 
@@ -1197,7 +1310,7 @@ Dialog.warnOutOfDate = function(params){
 };
 
 
-// Tracks whether we've warned for lack of bones API.  This will be show only for early private-beta members.
+// Tracks whether we've warned for lack of bones API.  This will be shown only for early private-beta members.
 Dialog.hasWarnedBones = false;
 
 Dialog.warnBones = function(){
@@ -2394,6 +2507,7 @@ KeyTapGesture.prototype.toString = function() {
 
 },{"events":21,"gl-matrix":23,"underscore":24}],10:[function(require,module,exports){
 var Pointable = require("./pointable")
+  , Bone = require('./bone')
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
   , vec3 = glMatrix.vec3
@@ -2531,6 +2645,19 @@ var Hand = module.exports = function(data) {
    * @type {Leap.Pointable[]}
    */
   this.fingers = [];
+  
+  if (data.armBasis){
+    this.arm = new Bone(this, {
+      type: 4,
+      width: data.armWidth,
+      prevJoint: data.elbow,
+      nextJoint: data.wrist,
+      basis: data.armBasis
+    });
+  }else{
+    this.arm = null;
+  }
+  
   /**
    * The list of tools detected in this frame that are held by this
    * hand, given in arbitrary order.
@@ -2832,7 +2959,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":14,"gl-matrix":23,"underscore":24}],11:[function(require,module,exports){
+},{"./bone":1,"./pointable":14,"gl-matrix":23,"underscore":24}],11:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -2885,11 +3012,19 @@ module.exports = {
    * ```
    */
   loop: function(opts, callback) {
-    if (callback === undefined && (!opts.frame && !opts.hand)) {
+    if (opts && callback === undefined && (!opts.frame && !opts.hand)) {
       callback = opts;
       opts = {};
     }
-    if (!this.loopController) this.loopController = new this.Controller(opts);
+
+    if (this.loopController) {
+      if (opts){
+        this.loopController.setupFrameEvents(opts);
+      }
+    }else{
+      this.loopController = new this.Controller(opts);
+    }
+
     this.loopController.loop(callback);
     return this.loopController;
   },
@@ -3319,7 +3454,9 @@ Pointable.Invalid = { valid: false };
 var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
-  , Finger = require('./finger');
+  , Finger = require('./finger')
+  , _ = require('underscore')
+  , EventEmitter = require('events').EventEmitter;
 
 var Event = function(data) {
   this.type = data.type;
@@ -3342,6 +3479,9 @@ exports.chooseProtocol = function(header) {
       protocol.sendFocused = function(connection, state) {
         connection.send(protocol.encode({focused: state}));
       }
+      protocol.sendOptimizeHMD = function(connection, state) {
+        connection.send(protocol.encode({optimizeHMD: state}));
+      }
       break;
     default:
       throw "unrecognized version";
@@ -3350,26 +3490,43 @@ exports.chooseProtocol = function(header) {
 }
 
 var JSONProtocol = exports.JSONProtocol = function(header) {
-  var protocol = function(data) {
-    if (data.event) {
-      return new Event(data.event);
+
+  var protocol = function(frameData) {
+
+    if (frameData.event) {
+
+      return new Event(frameData.event);
+
     } else {
-      var frame = new Frame(data);
+
+      protocol.emit('beforeFrameCreated', frameData);
+
+      var frame = new Frame(frameData);
+
+      protocol.emit('afterFrameCreated', frame, frameData);
+
       return frame;
+
     }
+
   };
 
   protocol.encode = function(message) {
     return JSON.stringify(message);
-  }
+  };
   protocol.version = header.version;
   protocol.serviceVersion = header.serviceVersion;
   protocol.versionLong = 'Version ' + header.version;
   protocol.type = 'protocol';
+
+  _.extend(protocol, EventEmitter.prototype);
+
   return protocol;
 };
 
-},{"./finger":7,"./frame":8,"./hand":10,"./pointable":14}],16:[function(require,module,exports){
+
+
+},{"./finger":7,"./frame":8,"./hand":10,"./pointable":14,"events":21,"underscore":24}],16:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
@@ -3476,10 +3633,10 @@ _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":21,"underscore":24}],19:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
-  full: '0.6.0',
+  full: '0.6.3',
   major: 0,
   minor: 6,
-  dot: 0
+  dot: 3
 }
 },{}],20:[function(require,module,exports){
 
