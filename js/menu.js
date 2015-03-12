@@ -1,4 +1,4 @@
-        $("#lab").hide()
+$("#lab").hide()
         
 $(function() {
     var cameraFOV = 60

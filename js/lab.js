@@ -339,7 +339,7 @@ function populateWorld() {
     var fromDay = 0;
     var toDay = 0;
     for (var i = 0; i <= month; i++) {
-        toDay += daysOfMonth[i];
+        toDay += daysOfMonth[i] ;
         if (i > 0) {
             fromDay += daysOfMonth[i - 1];
         }
@@ -1120,6 +1120,7 @@ function setupSampleFilters() {
 }
 
 init();
+initMenu();
 loop();
 setupSampleFilters();
 
@@ -1179,6 +1180,15 @@ function HandMeshOimizer() {
 	
 	this.removeHand = function(handMesh) {
 		//console.log("Removing hand bodies")
+		var handBody = this.hands[getHandMeshId(handMesh)] 
+		for(var fingerIndex = 0; fingerIndex < handBody.length; fingerIndex++) {
+			var fingerBodies = handBody[fingerIndex]
+			for(var fingerBodyIndex = 0; fingerBodyIndex < fingerBodies.length; fingerBodyIndex++) {
+				world.removeRigidBody(fingerBodies[fingerBodyIndex].body);
+			}
+		}
+		console.log("removing from mesh")
+		
 		this.hands[getHandMeshId(handMesh)] = null
 	}
 	
@@ -1246,19 +1256,25 @@ function initLeap() {
 	    }
 	  });
 	  
+	  /*
 	  Leap.loopController.use('pinchInfo', {pinchTimeToEmitEvent:1000}).on('indexPinched', function() {
 		  console.log("index")
 	  }).on('middlePinched', function() {
-		  toggleAnalysis()
-          threeMenu.open()
-          open = true
-          $("#menu").show()
-      	  $("#lab").hide()
+		  if(!open) {
+			  toggleAnalysis()
+	          threeMenu.open()
+	          open = true
+	          $("#menu").show()
+	          $("#lab").hide()
+		  }
 	  }).on('ringPinched', function() {
-		  toggleAnalysis()
+		  if(!open) {
+			  toggleAnalysis()
+		  }
       }).on('pinkyPinched', function() {
 		  console.log("pinky")
 	  })
+	  */
 }
 
 function initControls() {
@@ -1282,10 +1298,40 @@ function initControls() {
 	  window.addEventListener("keypress", onkey, true);
 }
 
+function initMenu() {
+    labMenu = new THREE.Menu(scene, camera, projector, raycaster, {
+    	drawAsLinear: true, 
+    	drawBackground:false, 
+    	menuItemSize : 100
+    })
+    
+    var statusMenuSelect = labMenu.createMenuSelect('img/Config.png', {x:-700, y:400, z:-400})
+    var stopStartMenuAction = labMenu.createActionMenuItem('img/Config.png', null, function() {
+    	toggleAnalysis() 
+    }) 
+    
+    var goToMenuAction = labMenu.createActionMenuItem('img/Config.png', null, function() {
+    	toggleAnalysis()
+        threeMenu.open()
+        open = true
+        $("#menu").show()
+        $("#lab").hide()	
+    }) 
+    
+    statusMenuSelect.addMenuItem(stopStartMenuAction)
+    statusMenuSelect.addMenuItem(goToMenuAction)
+        
+    labMenu.addMenuSelect(statusMenuSelect)
+}
+	
+
+
 function loop() {
 	vrControls.update();
-    vrEffect.render(scene, camera);
-	requestAnimationFrame( loop );
+	labMenu.updateAll();
+	vrEffect.render(scene, camera);
+    requestAnimationFrame( loop );
+	
     //controls.update();
     //renderer.render( scene, camera );
     

@@ -3,9 +3,9 @@ window.osoco.three = window.osoco.three || {}
 
 Object.defineProperty(Object.prototype, "extend", {
     value: function(otherObject) {
-    	for(var prop in otherObject) {
-    		this[prop] = otherObject[prop]
-    	}
+	for(var prop in otherObject) {
+		this[prop] = otherObject[prop]
+	}
     },
     writable: false,
     enumerable: false,
@@ -16,8 +16,13 @@ Object.defineProperty(Object.prototype, "extend", {
 	function getCurrentTime() {
 		return new Date().getTime()
 	}
-
-	function Menu(scene, camera, projector, raycaster) {
+    /**
+     * Options:
+     * drawAsLinear -> draw linear menuSelect
+     * drawBackgraund -> draw background
+     */
+	function Menu(scene, camera, projector, raycaster, options) {
+		options = options || {}
 		var SELECT_MENU_ITEM_TIME = 1500
 		var ROTATE_MENU_DELAY = 1400
 		
@@ -28,11 +33,12 @@ Object.defineProperty(Object.prototype, "extend", {
 		this.projector = projector
 		this.raycaster = raycaster
 		this.menuElements = []
+		this.menuSelects = []
 		
 		var root
 
 		this.currentMenu  
-		var drawer = new MenuDrawer(scene, camera)
+		var drawer = new MenuDrawer(scene, camera, options)
 
 		this.setRoot = function(menuSelect) {
 			root = menuSelect
@@ -50,14 +56,22 @@ Object.defineProperty(Object.prototype, "extend", {
 		this.update = function() {
 			updateViewCenterPosition()
 			if(this.currentMenu) {
-				rayTest.call(this)
+				rayTest.call(this, this.currentMenu)
+			}
+		}
+		
+		this.updateAll = function() {
+			updateViewCenterPosition()
+			for(var i = 0; i < this.menuSelects.length; i++) {
+				rayTest.call(this, this.menuSelects[i])
 			}
 		}
 
-		this.createMenuSelect = function(imageUrl) {
+		this.createMenuSelect = function(imageUrl, menuCenterVector) {
 			var menuSelect = new MenuSelect(imageUrl, this.menuItemsCounter++)
-			menuSelect.center = createCenterForMenuSelect(this.menuSelectsCounter ++)
+			menuSelect.center = menuCenterVector || createCenterForMenuSelect(this.menuSelectsCounter ++)
 			this.menuElements.push(menuSelect)
+			this.menuSelects.push(menuSelect)
 			return menuSelect
 		}
 		
@@ -77,28 +91,28 @@ Object.defineProperty(Object.prototype, "extend", {
 			return menuItem.firstSelectionTime && currentTime - menuItem.firstSelectionTime > SELECT_MENU_ITEM_TIME
 		}
 
-		function rayTest() {
+		function rayTest(menuSelect) {
 			var vector = new THREE.Vector3( 0, 0, 1 );
 			projector.unprojectVector( vector, camera );
 			raycaster.set( camera.position, vector.sub(camera.position).normalize());
-			var intersects = raycaster.intersectObjects( this.currentMenu.threeMenuItems.children);
+			var intersects = raycaster.intersectObjects( menuSelect.threeMenuItems.children);
 
 			var preSelectedMenuItemMesh = intersects.length > 0 ? intersects[0].object : null 
 			var preSelectedMenuItem = preSelectedMenuItemMesh && preSelectedMenuItemMesh.menuItem
 			if(preSelectedMenuItem) {
 				var currentTime = getCurrentTime()
 				preSelectedMenuItem.firstSelectionTime = preSelectedMenuItem.firstSelectionTime || currentTime
-				if(isMenuItemSelected(preSelectedMenuItem, currentTime)) {
+				if(isMenuItemSelected(preSelectedMenuItem, currentTime) && !preSelectedMenuItem.isSelected) {
 					preSelectedMenuItem.isSelected = true
 					this.onMenuItemSelected(preSelectedMenuItem)
 				}
 			}
-			resetFirstSelectionTime(this.currentMenu, preSelectedMenuItem)
-			drawer.updateMenu(this.currentMenu, preSelectedMenuItem, preSelectedMenuItemMesh)
+			resetFirstSelectionTime(menuSelect, preSelectedMenuItem)
+			drawer.updateMenu(menuSelect, preSelectedMenuItem, preSelectedMenuItemMesh)
 		}
 		
 		this.onMenuItemSelected = function(menuItem) {
-			menuItem.onSelect(this) 
+			menuItem.onSelect(this)
 		}
 		
 		this.onActionMenuItemSelected = function(actionMenuItem) {
@@ -146,8 +160,8 @@ Object.defineProperty(Object.prototype, "extend", {
 	/************************************                DRAWER                     **********************************/
 	/*****************************************************************************************************************/
 
-	function MenuDrawer(scene, camera) {
-		var MENU_ITEM_SIZE = 10
+	function MenuDrawer(scene, camera, options) {
+		var DEFAULT_MENU_ITEM_SIZE = 10
 		var UNSELECTED_COLOR = 0x00ff00 
 		var PRESELECTED_COLOR = 0x00ffff
 		var SELECTED_COLOR = 0xff0000
@@ -171,11 +185,19 @@ Object.defineProperty(Object.prototype, "extend", {
 
 		var STARS_NUMBER = 10000
 		var viewCenter = createViewCenter()
-
-		init()
+		
+		var drawAsLinear = options.drawAsLinear
+	    var drawBackgraund = options.drawBackground
+	    var menuItemSize = options.menuItemSize || DEFAULT_MENU_ITEM_SIZE  
+	    
+	    var MENU_LINEAR_DISTANCE = menuItemSize * 1.2
+	    
+	    init()
 		function init() {
 			camera.quaternion.y = 0.99
-			drawStars()
+			if(drawBackgraund) {
+				drawStars()
+			}
 		}
 		
 		function createViewCenter() {
@@ -256,7 +278,7 @@ Object.defineProperty(Object.prototype, "extend", {
 
 		function createMeshForMenuItem(menuItem) {
 			var texture = new THREE.ImageUtils.loadTexture( menuItem.imageUrl )
-			var imgGeometry = new THREE.PlaneGeometry(MENU_ITEM_SIZE,MENU_ITEM_SIZE)
+			var imgGeometry = new THREE.PlaneGeometry(menuItemSize,menuItemSize)
 
 			menuItem.unselectedMaterial = buildMenuMaterial(texture, UNSELECTED_COLOR)
 			menuItem.preSelectedMaterial = buildMenuMaterial(texture,PRESELECTED_COLOR)
@@ -276,10 +298,15 @@ Object.defineProperty(Object.prototype, "extend", {
 		function colocateMenuMesh(mesh, menu, menuItemIndex) {
 			var rotation = MENU_ITEM_ROTATION_DELTA*menuItemIndex + menu.currentRotation
 			var menuCenter = menu.center
-			mesh.position.x = menuCenter.x + MENU_RADIOUS*Math.sin(rotation)
-			mesh.position.z = menuCenter.z + MENU_RADIOUS*Math.cos(rotation)
 			mesh.position.y = menuCenter.y
-			mesh.lookAt(menuCenter);    
+			if(drawAsLinear) {
+				mesh.position.x = menuCenter.x + MENU_LINEAR_DISTANCE * menuItemIndex
+				mesh.position.z = menuCenter.z
+			} else {
+				mesh.position.x = menuCenter.x + MENU_RADIOUS*Math.sin(rotation)
+				mesh.position.z = menuCenter.z + MENU_RADIOUS*Math.cos(rotation)
+				mesh.lookAt(menuCenter);
+			}
 		}
 
 		function buildMenuMaterial(texture, color) {
@@ -295,6 +322,9 @@ Object.defineProperty(Object.prototype, "extend", {
 			viewCenter.visible = false
 			updateCamera(0)
 
+			console.log(camera.position)
+			console.log(newPosition.y)
+			console.log(deltay)
 			function updateCamera(currentSteps) {
 				camera.position.x += deltax
 				camera.position.y += deltay
