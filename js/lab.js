@@ -76,7 +76,8 @@ var textureColors = {
 var filterColors = [ '#633', '#363', '#336' ];
 var filters = {};
 var defaultFilterEnabled = true;
-var defaultFilterPositionX = 0;
+var defaultFilterPositionX = -1000;
+var filterPositionDeltaX = [0, 200, 400,  1550, 1750, 1950];
 var filterIdMoving = -1;
 var filterIdCounter = 0;
 var paymentsPerSphere = 250;
@@ -572,9 +573,7 @@ var rayTest = function () {
 // UI Controls
 
 function getCurrentDataset() {
-    console.log(datasets[zipcode])
-    console.log(eval(datasets[zipcode]))
-	return eval(datasets[zipcode]);;
+    return eval(datasets[zipcode]);;
 }
 
 function toggleInspector() {
@@ -599,59 +598,34 @@ function turnOffInspector() {
     }
 }
 
-function toggleFiltersInfo() {
-    filterActivated = !filterActivated;
-    if (filterActivated) {
-        turnOffInspector();        
-        document.getElementById("filterBtn").className = "activated";
-        document.getElementById("filtersInfo").className = "shown";        
-    } else {
-        document.getElementById("filtersInfo").className = "";
-        document.getElementById("filterBtn").className = "";
-    }
-}
-
-function turnOffFiltersInfo() {
-    if (filterActivated) {
-        toggleFiltersInfo();
-    }
-}
-
-function toggleMoreFilterInstructions() {
-    showMoreFilterInstructions = !showMoreFilterInstructions;
-    if (showMoreFilterInstructions) {
-        document.getElementById("moreFilterInstructions").className = 'shown';
-        document.querySelector("#filtersInfo .showMore").innerHTML = 'hide instructions';
-    } else {
-        document.getElementById("moreFilterInstructions").className = '';
-        document.querySelector("#filtersInfo .showMore").innerHTML = 'show instructions';
-    }
-}
-
 function toggleFilter(filterId) {
     var filter = filters[filterId];
     filter.enabled ? disableFilter(filterId) : enableFilter(filterId)
 }
 
+function calculatePositionForFilter(filterId) {
+	return  [defaultFilterPositionX + filterPositionDeltaX[filterId],75,0]
+	
+}
 function enableFilter(filterId) {
 	function enableFunction() {
 		var filter = filters[filterId];
 	    filter.enabled = true;
+	    var filterPosition = calculatePositionForFilter(filterId)
 	    if (!filter.wall) {
 	        config[3] = filtered_mask;
 	        config[4] = all_mask;
 	        filter.wall = new THREE.Object3D();    
-	        filter.wall.position.x = defaultFilterPositionX;
 	        filter.wallBody = new OIMO.Body({
 	            name: 'filter-' + filter.id,
 	            size: [20, 150, 1000],
-	            pos: [defaultFilterPositionX,75,0],
+	            pos: filterPosition,
 	            rot: [0,0,0],
 	            world: world,
 	            move: false,
 	            config: config
 	        });
-	        filter.wallMesh = addStaticBox([20, 150, 1000], [defaultFilterPositionX,75,0], [0,0,0], true);
+	        filter.wallMesh = addStaticBox([20, 150, 1000], filterPosition, [0,0,0], true);
 	        scene.add(filter.wall);
 	        bodys[bodys.length] = filter.wallBody;
 	        meshs[meshs.length] = filter.wallMesh;
@@ -708,14 +682,6 @@ function disableFilter(filterId) {
     doUpdatingStatsCube(disableFunction)
 }
 
-function toggleFilterMoving(filterId) {
-    var filter = filters[filterId];
-    filter.movingEnabled = !filter.movingEnabled;
-    document.getElementById("toggleFilterMoving-" + filterId).className =
-        filter.movingEnabled ? 'activated' : null;
-    filterIdMoving = filter.movingEnabled ? filterId : -1;
-}
-
 function removeFilterWall(filterId) {
     var filter = filters[filterId];
     scene.remove(filter.wall);
@@ -724,20 +690,6 @@ function removeFilterWall(filterId) {
     filter.wall = false
     //bodys.splice(filter.bodyIndex, 1);
     //meshs.splice(filter.bodyIndex, 1);
-}
-
-function clearNewFilterForm() {
-    document.getElementById("newFilterName").value = '';
-    document.getElementById("newFilterExpression").value = '';
-}
-
-function validateFilterData(name, expression) {
-    var isValid = false;
-    if (name && expression) {
-        // TODO: check only supported data variables and operators are used
-        isValid = true;
-    }
-    return isValid;
 }
 
 function createNewFilter(name, expression) {
