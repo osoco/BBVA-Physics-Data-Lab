@@ -1,7 +1,9 @@
-$("#lab").hide()
-        
-$(function() {
-    var cameraFOV = 60
+showMenu()
+
+;(function() {
+    window.datasetMenu = null
+    
+	var cameraFOV = 60
     var cameraAspectRatio = window.innerWidth / window.innerHeight
     var cameraNearPlane = 0.1
     var cameraFarPlane = 15000
@@ -30,65 +32,39 @@ $(function() {
     var container = document.getElementById("menu")
     container.appendChild( renderer.domElement )
 
-    initMenu()
+    datasetMenu = initMenu()
     loop()
     
     function loop() {
-		if(open) {
-		    	vrControls.update()
-		        vrEffect.render(scene, camera)
-		        threeMenu.update()
-		        requestAnimationFrame( loop )
+		if(menuOpen) {
+	    	vrControls.update()
+	        vrEffect.render(scene, camera)
+	        datasetMenu.update()
+	        requestAnimationFrame( loop )
 		} else {
 			setTimeout(loop, 100)
 		}
     }
-    
-      
-      onkey = function(event) {
-          if (event.key === 'm') {
-        	toggleAnalysis()
-            threeMenu.open()
-            open = true
-            $("#menu").show()
-        	$("#lab").hide()
-          }
-        };
-
-        window.addEventListener("keypress", onkey, true);
-        
+   
     function initMenu() {
-        threeMenu = new THREE.Menu(scene, camera, projector, raycaster)
-        
-        var periods = {
-               "Nov 2013":0,
-               "Dec 2013":1,
-               "Jan 2014":2,
-               "Feb 2014":3,
-               "Mar 2014":4,
-               "Apr 2014":5
-        }
-        
+        var threeMenu = new THREE.Menu(scene, camera, projector, raycaster)
+
         var zipCodeMenuSelect = threeMenu.createMenuSelect('img/Config.png')
         var periodMenuSelect = threeMenu.createMenuSelect('img/Config.png')
         
         for(var datasetZipCode in datasets) {
         	var zipCodeMenuAction = threeMenu.createActionMenuItem(buildImageNameByZipCode(datasetZipCode), periodMenuSelect, function() {
-                	zipcode = datasetZipCode
+                	selectZipCode(datasetZipCode)
             }) 
             zipCodeMenuSelect.addMenuItem( zipCodeMenuAction)
         }
         
-        for(var period in periods) {
-        	var periodMenuAction = threeMenu.createActionMenuItem('img/Config.png', null, (function() {
-        		var periodCopy = period 
+        for(var periodIndex in monthAsString) {
+        	var periodMenuAction = threeMenu.createActionMenuItem(buildImageNameByPeriodIndex(periodIndex), null, (function() {
+        		var periodIndexCopy = periodIndex 
         		return function() {
-        			open = false
-        			toggleAnalysis()
-        			selectPeriod(periods[periodCopy])
-        			$("#menu").hide()
-                 	$("#lab").show()
-                }
+        			selectPeriod(periodIndexCopy)
+        		}
             })())
             periodMenuSelect.addMenuItem(periodMenuAction)
         }
@@ -100,15 +76,19 @@ $(function() {
         threeMenu.addMenuSelect(periodMenuSelect)
         threeMenu.setRoot(zipCodeMenuSelect)
         threeMenu.open()
-        open = true
+        
+        return threeMenu
     }
     
     function buildImageNameByZipCode(zipCode) {
     	return 'img/menu/' + zipCode + '.png'
     }
     
+    function buildImageNameByPeriodIndex(periodIndex) {
+    	return 'img/menu/' + periodIndex + '.png'
+    }
+    
     // DEBUG
     menuCamera = camera
-    
-})
+})()
     

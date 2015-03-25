@@ -50,7 +50,7 @@ Object.defineProperty(Object.prototype, "extend", {
 		
 		this.open = function() {
 			this.currentMenu = root
-			translateToCurrentMenu.call(this)
+			translateToCurrentMenu.call(this, true)
 		}
 		
 		this.update = function() {
@@ -146,12 +146,12 @@ Object.defineProperty(Object.prototype, "extend", {
 			drawer.updateViewCenterPosition(direction)
 		}
 		
-		function translateToCurrentMenu() {
-			drawer.translateCamera(this.currentMenu.center)
+		function translateToCurrentMenu(withoutTransition) {
+			drawer.translateCamera(this.currentMenu.center, withoutTransition)
 			var that = this
 			setTimeout(function() {
 				drawer.rotateMenu(that.currentMenu)
-			}, ROTATE_MENU_DELAY)
+			}, withoutTransition ? 0 : ROTATE_MENU_DELAY)
 		}
 	} 
 
@@ -313,26 +313,24 @@ Object.defineProperty(Object.prototype, "extend", {
 			return new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide, transparent: false, color: color});
 		}
 
-		this.translateCamera = function(newPosition) {
-			var deltax = (newPosition.x - camera.position.x) / TRANSLATE_CAMERA_STEPS
-			var deltay = (newPosition.y - camera.position.y) / TRANSLATE_CAMERA_STEPS
-			var deltaz = (newPosition.z - camera.position.z) / TRANSLATE_CAMERA_STEPS
+		this.translateCamera = function(newPosition, withoutTransition) {
+			var cameraSteps = withoutTransition ? 1 : TRANSLATE_CAMERA_STEPS
+			var deltax = (newPosition.x - camera.position.x) / cameraSteps
+			var deltay = (newPosition.y - camera.position.y) / cameraSteps
+			var deltaz = (newPosition.z - camera.position.z) / cameraSteps
 
 			
 			viewCenter.visible = false
 			updateCamera(0)
 
-			console.log(camera.position)
-			console.log(newPosition.y)
-			console.log(deltay)
 			function updateCamera(currentSteps) {
 				camera.position.x += deltax
 				camera.position.y += deltay
 				camera.position.z += deltaz
-				if(++currentSteps < TRANSLATE_CAMERA_STEPS) {
+				if(++currentSteps < cameraSteps) {
 					setTimeout(
 							function () {updateCamera(currentSteps)}, 
-							CAMERA_TRANSLATION_ANIMATION_TIME/ TRANSLATE_CAMERA_STEPS
+							CAMERA_TRANSLATION_ANIMATION_TIME/ cameraSteps
 					)
 				} else {
 					viewCenter.visible = true
@@ -354,19 +352,20 @@ Object.defineProperty(Object.prototype, "extend", {
 		}
 			
 		
-		this.rotateMenu = function(menu) {
+		this.rotateMenu = function(menu,withoutTransition) {
+			var rotateMenuSteps = withoutTransition ?  1 : ROTATE_MENU_STEPS
 			var targetRotation = menu.centerRotation + menu.currentRotation
 			var cameraRotationY = calculateRealCameraRotation(camera.quaternion, camera.rotation)
-			var deltaY = ((Math.PI * 2) - targetRotation - cameraRotationY) / ROTATE_MENU_STEPS
+			var deltaY = ((Math.PI * 2) - targetRotation - cameraRotationY) / rotateMenuSteps
 			var that = this
 			updateMenu(0)
 			function updateMenu(currentSteps) {
 				that.colocateMenuMeshes(menu, deltaY) 
 
-				if(++currentSteps < ROTATE_MENU_STEPS) {
+				if(++currentSteps < rotateMenuSteps) {
 					setTimeout(
 						function() {updateMenu(currentSteps)}, 
-						MENU_ROTATION_ANIMATION_TIME/ ROTATE_MENU_STEPS
+						MENU_ROTATION_ANIMATION_TIME / rotateMenuSteps
 					)
 				}
 			}

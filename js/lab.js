@@ -17,7 +17,7 @@ var mats = {};
 // Oimo vars
 var world = null;
 var bodys = [];
-var updatePhysicsInterval;
+var physicsUpdateInterval;
 
 var fps = [0,0,0,0];
 var ToRad = Math.PI / 180;
@@ -40,6 +40,9 @@ var config = [
     1, // The bits of the collision groups to which the shape belongs.
     0xffffffff // The bits of the collision groups with which the shape collides.
 ];
+
+//Scenes vars
+var labOpen, menuOpen
 
 // Dataset vars
 var zipcode = null;
@@ -415,10 +418,10 @@ function populateWorld() {
 
 function resetWorld() {
     turnOffInspector();
-    clearInterval(updateOimoPhysics, 1000/60);
+    clearInterval(physicsUpdateInterval);
+    removeStatsCube();
     currentDate = 0;
     allLanded = false;
-    document.getElementById("dayInfo").innerHTML = null;
     clearMeshes();
     clearFilters();
     world.clear();    
@@ -461,11 +464,6 @@ function updateOimoPhysics() {
                 bodys[i].metadata.landed = true;
                 if (bodys[i].metadata.date > currentDate) {
                     currentDate = bodys[i].metadata.date;
-                    document.getElementById("dayInfo").innerHTML = "Day " + bodys[i].metadata.date;
-                    if (currentDate.substring(6) == daysOfMonth[month]) {
-                        showTools();
-                        allLanded = true;
-                    }
                 }
             }
         }
@@ -798,17 +796,29 @@ function createNewFilter(name, expression) {
 }
 
 function toggleStatsCubeInfo() {
-    statsCubeActivated = !statsCubeActivated;
-    if (statsCubeActivated) {
-        document.getElementById("statsCubeBtn").className = "activated";
-        statsCube = buildCube([-500, 0, -500], ['gender', 'age', 'avg payment'], 1100);
-        scene.add(statsCube);
-        enableStatsCube();
-    } else {
-        document.getElementById("statsCubeBtn").className = "";
-        scene.remove(statsCube);
-        removeStatsCube();
+    statsCubeActivated ? removeStatsCube() : addStatsCube() 
+}
+
+function removeStatsCube() {
+	statsCubeActivated = false
+	scene.remove(statsCube);
+	var joint;
+    for (var i = 0; i < cubeJoints.length; i++) {
+        joint = cubeJoints[i];
+        world.removeJoint(joint.joint);
     }
+    for (var key in vertices) {
+        vertices[key].remove();
+    }
+    vertices = {};
+    cubeJoints = [];
+}
+
+function addStatsCube() {
+	statsCubeActivated = true
+	statsCube = buildCube([-500, 0, -500], ['gender', 'age', 'avg payment'], 1100);
+    scene.add(statsCube);
+    enableStatsCube();
 }
 
 function genderAsString(gender) {
@@ -835,71 +845,34 @@ function ageAsString(age) {
     return ages[age];    
 }
 
-function selectZipcode() {
-    var select = document.getElementById('zipcodeSelect');
-    if (select.value != '') {
-        zipcode = select.value;
-        showPeriodControl();
-        deactivateCurrentPeriodButton();
-        hideTools();
-        hideInfo();
-    } else {
-        zipcode = null;
-        month = null;
-        hideControls();
-    }
+function selectZipCode(datasetZipCode) {
+	zipcode = datasetZipCode
 }
 
 function selectPeriod(period) {
-    deactivateCurrentPeriodButton();
     month = period;
-    activatePeriodButton(period);
-    showInfo();
-    if (analysisStarted) {
-        populateWorld();
-        hideTools();
-    }
+    startAnalysis(true)
+	showLab()
 }
 
-function showPeriodControl() {
-    var control = document.getElementById('choose-period');
-    if (control.className !== 'show') {
-        control.className = 'show';
-    }
+function returnToMenu() {
+	stopAnalysis()
+    datasetMenu.open()
+    showMenu()
 }
 
-function hidePeriodControl() {
-    document.getElementById('choose-period').className = '';
-    deactivateCurrentPeriodButton();
+function showMenu() {
+	menuOpen = true
+	labOpen = false
+	document.getElementById('menu').style.display = 'block';
+	document.getElementById('lab').style.display = 'none';
 }
 
-function activatePeriodButton(period) {
-    var btn = document.getElementById('button-period-' + period);
-    btn.className = 'activated';
-}
-
-function deactivateCurrentPeriodButton() {
-    var activatedBtn = document.querySelectorAll("#choose-period input.activated");
-    if (activatedBtn && activatedBtn.length > 0) {
-        activatedBtn[0].className = null;
-    }
-}
-
-function showInfo() {
-    document.getElementById("monthInfo").innerHTML = monthAsString[month];
-    document.getElementById("zipcodeInfo").innerHTML = zipcodeAsString[zipcode];
-    document.getElementById("info").className = 'activated';    
-}
-
-function hideInfo() {
-    document.getElementById("info").className = null;    
-}
-
-function hideControls() {
-    resetWorld();
-    hideTools();    
-    hideInfo();    
-    hidePeriodControl();
+function showLab() {
+	labOpen = true
+	menuOpen = false 
+	document.getElementById('lab').style.display = 'block';
+	document.getElementById('menu').style.display = 'none';
 }
 
 function toggleAnalysis() {
@@ -907,18 +880,14 @@ function toggleAnalysis() {
 }
 
 function stopAnalysis() {
-	document.getElementById('pause-button').style.display = 'none';
-    document.getElementById('start-button').style.display = 'block';
 	analysisStarted = false
 }
 
-function startAnalysis() {
-	if (bodys.length == 0) {
+function startAnalysis(repopulate) {
+	if (bodys.length == 0 || repopulate) {
         populateWorld();
     }
-    document.getElementById('start-button').style.display = 'none';
-    document.getElementById('pause-button').style.display = 'block';
-	analysisStarted = true
+    analysisStarted = true
 }
 
 function showTools() {
@@ -1060,20 +1029,6 @@ function getMaxAvgPaymentNotFiltered() {
         }
     }
     return maxAvgPaymentNotFiltered;
-}
-
-
-function removeStatsCube() {
-    var joint;
-    for (var i = 0; i < cubeJoints.length; i++) {
-        joint = cubeJoints[i];
-        world.removeJoint(joint.joint);
-    }
-    for (var key in vertices) {
-        vertices[key].remove();
-    }
-    vertices = {};
-    cubeJoints = [];
 }
 
 function enableStatsCube() {
@@ -1311,11 +1266,7 @@ function initMenu() {
     }) 
     
     var goToMenuAction = labMenu.createActionMenuItem('img/Config.png', null, function() {
-    	toggleAnalysis()
-        threeMenu.open()
-        open = true
-        $("#menu").show()
-        $("#lab").hide()	
+    	returnToMenu()
     }) 
     
     statusMenuSelect.addMenuItem(stopStartMenuAction)
@@ -1323,16 +1274,14 @@ function initMenu() {
         
     labMenu.addMenuSelect(statusMenuSelect)
 }
-	
-
 
 function loop() {
-	vrControls.update();
-	labMenu.updateAll();
-	vrEffect.render(scene, camera);
-    requestAnimationFrame( loop );
-	
-    //controls.update();
-    //renderer.render( scene, camera );
-    
+	if(labOpen) {
+		vrControls.update();
+		labMenu.updateAll();
+		vrEffect.render(scene, camera);
+	    requestAnimationFrame( loop );
+	} else {
+		setTimeout(loop, 100)
+	}
 }

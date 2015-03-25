@@ -5,79 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
   <link rel="stylesheet" href="css/lab.css"/>
-  
-    <script src="js/jquery-1.11.2.min.js"></script>
-    
-    
 </head>
 <body>
-    <div id="header">
-      <h1>BBVA Physics Data Lab</h1>
-      <h2>Feel the data at your hands!</h2>
-    </div>
-
-    <div id="controls">
- 
-      <div id="choose-zipcode">
-        <p class="choose-header"><span class="icon-map icon"></span> Choose zipcode</p>
-        <select id="zipcodeSelect" onChange="selectZipcode()">
-          <option value="">Choose one zip...</option>          
-          <option value="64700">Instituto Tecnológico de Monterrey</option>
-          <option value="44130">Ciudad Creativa Digital de Guadalajara</option>          
-          <option value="11529">Museo Soumaya de Mexido DF</option>
-        </select>
-      </div>
-
-      <div id="choose-period">
-        <p class="choose-header"><span class="icon-calendar icon"></span> Choose period</p>
-        <div>
-          <input id="button-period-0" type="button" value="Nov 2013" onClick="selectPeriod(0)">
-          <input id="button-period-1" type="button" value="Dec 2013" onClick="selectPeriod(1)">
-          <input id="button-period-2" type="button" value="Jan 2014" onClick="selectPeriod(2)"><br/>
-          <input id="button-period-3" type="button" value="Feb 2014" onClick="selectPeriod(3)">
-          <input id="button-period-4" type="button" value="Mar 2014" onClick="selectPeriod(4)">
-          <input id="button-period-5" type="button" value="Apr 2014" onClick="selectPeriod(5)">
-        </div>
-      </div>
-
-      <div id="info">
-
-        <a href="#" id="start-button" onClick="toggleAnalysis()"><span class="icon-play"></span> Launch</a>
-        <a href="#" id="pause-button" onClick="toggleAnalysis()"><span class="icon-pause"></span> Pause</a>
-        
-        <div class="arrow_box" id="summary">
-          <p>
-            You are about to analyze card payments  that took place on <em><span id="monthInfo"></span></em> at <em><span id="zipcodeInfo"></span></em>.
-          </p>
-          <p>
-            Payments are depicted as 3D spheres and they fall inside a transparent box at the pace they were carried out.
-          </p>
-          <p>
-            Each sphere corresponds with a group of upto 150 payments on an specific
-            day made by people in the same age group and gender.
-          </p>
-          <p>
-            The sphere radius is proportional to the average payment and its color
-            represents the commercial category following this legend:
-          </p>
-          <ul id="legend">
-            <li><span class="mx_barsandrestaurants color"></span> bars/restaurants</li>
-            <li><span class="mx_food color"></span> food</li>
-            <li><span class="mx_services color"></span> services</li>
-            <li><span class="mx_office color"></span> office</li>
-            <li><span class="mx_car color"></span> car</li>
-            <li><span class="mx_auto color"></span> auto</li>
-            <li><span class="mx_travel color"></span> travel</li>
-            <li><span class="mx_sport color"></span> sport</li>
-            <li><span class="mx_beauty color"></span> beauty</li>
-            <li><span class="mx_health color"></span> health</li>
-            <li><span class="mx_fashion color"></span> fashion</li>
-            <li><span class="mx_leisure color"></span> leisure</li>                        
-          </ul>
-        </div>      
-      </div>
-    </div>
-    
     <div id="tools">
       <ul>
         <li>
@@ -186,6 +115,40 @@ window.twttr=(function(d,s,id){var t,js,fjs=d.getElementsByTagName(s)[0];if(d.ge
     </script>
     
     
-    <script src="js/menu.js"> </script> 
+    <script src="js/menu.js"> </script>
+    
+    <script>
+    
+      onkey = function(event) {
+          if (event.key === 's') {
+            console.log("starting")
+            startApp()
+          }
+          
+          if (event.key === 'r') {
+            console.log("starting")
+            returnToMenu()
+          }
+          if (event.key === 't') {
+            console.log("showing tools")
+            showTools();
+          }
+          
+          if (event.key === 'c') {
+            console.log("statsCube")           
+            toggleStatsCubeInfo()
+          }
+        };
+
+        window.addEventListener("keypress", onkey, true);
+        
+    
+    //DEBUG
+    function startApp() {
+        selectZipCode(64700)
+        selectPeriod(1)
+    }
+    
+    </script> 
 </body>
 </html>
