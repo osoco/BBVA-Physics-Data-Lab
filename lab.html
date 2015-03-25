@@ -138,6 +138,12 @@ window.twttr=(function(d,s,id){var t,js,fjs=d.getElementsByTagName(s)[0];if(d.ge
             console.log("statsCube")           
             toggleStatsCubeInfo()
           }
+          
+          if (event.key >= 0 && event.key < 5) {
+            toggleFilter(event.key)           
+          }
+          
+          
         };
 
         window.addEventListener("keypress", onkey, true);

@@ -628,92 +628,84 @@ function toggleMoreFilterInstructions() {
     }
 }
 
-function createFilter() {
-    var filterName = document.getElementById("newFilterName").value;
-    var filterExpression = document.getElementById("newFilterExpression").value;
-    if (validateFilterData(filterName, filterExpression)) {
-        var filter = createNewFilter(filterName, filterExpression)
-        filters[filter.id] = filter;
-        clearNewFilterForm();
-        addFilterInfo(filter);
-        if (filter.enabled) {
-            enableFilter(filter.id);
-        }
-    } else {
-        alert("Oops, filter creation error!. Name and expression are mandatory fields.");
-    }
-}
-
 function toggleFilter(filterId) {
     var filter = filters[filterId];
-    filter.enabled = !filter.enabled;
-    document.querySelector("#toggleFilter-" + filterId + " span").className =
-        filter.enabled ? 'icon-checkbox-checked' : 'icon-checkbox-unchecked';
-    filter.enabled ? enableFilter(filterId): disableFilter(filterId);
+    filter.enabled ? disableFilter(filterId) : enableFilter(filterId)
 }
 
 function enableFilter(filterId) {
-    var filter = filters[filterId];
-    if (!filter.wall) {
-        config[3] = filtered_mask;
-        config[4] = all_mask;
-        filter.wall = new THREE.Object3D();    
-        filter.wall.position.x = defaultFilterPositionX;
-        filter.wallBody = new OIMO.Body({
-            name: 'filter-' + filter.id,
-            size: [20, 150, 1000],
-            pos: [defaultFilterPositionX,75,0],
-            rot: [0,0,0],
-            world: world,
-            move: false,
-            config: config
-        });
-        filter.wallMesh = addStaticBox([20, 150, 1000], [defaultFilterPositionX,75,0], [0,0,0], true);
-        scene.add(filter.wall);
-        bodys[bodys.length] = filter.wallBody;
-        meshs[meshs.length] = filter.wallMesh;
-        filter.bodyIndex = bodys.length;
-    }
-    
-    var i = bodys.length;
-    var body;
-    while (i--) {
-        body = bodys[i];
-        if (body.metadata.isData &&
-            (body.body.jointLink == null) &&
-            filter.matchData(body.metadata)) {
-            
-            body.body.shapes.belongsTo = filtered_mask;
-            joints[joints.length] = new OIMO.Link({
-                type: 'jointBall',
-                body1: filter.wallBody.name,
-                body2: 'sphere-' + i,
-                pos1: [0, 0, body.getPosition().z],
-                pos2: [0, 0, 0],
-                min:0,
-                max:100,
-                collision:true,
-                world:world });
-        }
-    }
+	function enableFunction() {
+		var filter = filters[filterId];
+	    filter.enabled = true;
+	    if (!filter.wall) {
+	        config[3] = filtered_mask;
+	        config[4] = all_mask;
+	        filter.wall = new THREE.Object3D();    
+	        filter.wall.position.x = defaultFilterPositionX;
+	        filter.wallBody = new OIMO.Body({
+	            name: 'filter-' + filter.id,
+	            size: [20, 150, 1000],
+	            pos: [defaultFilterPositionX,75,0],
+	            rot: [0,0,0],
+	            world: world,
+	            move: false,
+	            config: config
+	        });
+	        filter.wallMesh = addStaticBox([20, 150, 1000], [defaultFilterPositionX,75,0], [0,0,0], true);
+	        scene.add(filter.wall);
+	        bodys[bodys.length] = filter.wallBody;
+	        meshs[meshs.length] = filter.wallMesh;
+	        filter.bodyIndex = bodys.length;
+	    }
+	    
+	    var i = bodys.length;
+	    var body;
+	    while (i--) {
+	        body = bodys[i];
+	        if (body.metadata.isData &&
+	            (body.body.jointLink == null) &&
+	            filter.matchData(body.metadata)) {
+	            
+	            body.body.shapes.belongsTo = filtered_mask;
+	            joints[joints.length] = new OIMO.Link({
+	                type: 'jointBall',
+	                body1: filter.wallBody.name,
+	                body2: 'sphere-' + i,
+	                pos1: [0, 0, body.getPosition().z],
+	                pos2: [0, 0, 0],
+	                min:0,
+	                max:100,
+	                collision:true,
+	                world:world });
+	        }
+	    }
+	}
+	doUpdatingStatsCube(enableFunction)
 }
 
 function disableFilter(filterId) {
-    var filter = filters[filterId];
-    var joint, sphere;
-    var newJoints = [];
-    for (var i = 0; i < joints.length; i++) {
-        joint = joints[i];
-        if (joint.joint.body1.name == filter.wallBody.name) {
-            sphere = joint.joint.body2;
-            sphere.shapes.belongsTo = spheres_mask;
-            world.removeJoint(joint.joint);
-            fallBodyFromSky(sphere);
-        } else {
-            newJoints.push(joint);
-        }
+    function disableFunction() {
+		var filter = filters[filterId];
+	    var joint, sphere;
+	    var newJoints = [];
+	    
+	    filter.enabled = false;
+	    for (var i = 0; i < joints.length; i++) {
+	        joint = joints[i];
+	        if (joint.joint.body1.name == filter.wallBody.name) {
+	            sphere = joint.joint.body2;
+	            sphere.shapes.belongsTo = spheres_mask;
+	            world.removeJoint(joint.joint);
+	            fallBodyFromSky(sphere);
+	        } else {
+	            newJoints.push(joint);
+	        }
+	    }
+	    joints = newJoints;
+	    removeFilterWall(filterId)
     }
-    joints = newJoints;
+    
+    doUpdatingStatsCube(disableFunction)
 }
 
 function toggleFilterMoving(filterId) {
@@ -724,40 +716,14 @@ function toggleFilterMoving(filterId) {
     filterIdMoving = filter.movingEnabled ? filterId : -1;
 }
 
-function addFilterInfo(filter) {
-    var filtersContent = document.querySelector("#filtersInfo .content");
-    filtersContent.innerHTML += '<div id="filter-' + filter.id + '" class="filter" style="border-color: ' + filter.color + '">' +
-        '<div class="filter-header" style="background-color: ' + filter.color + '">' + filter.name + '</div>' +
-        '<div class="filter-contents">' +
-        '<div class="code">' + filter.expression + '</div>' +
-        '<a href="#" onclick="removeFilter(' + filter.id + ')" title="remove"><span class="icon-remove"></span></a>' +
-        '<a id="toggleFilterMoving-' + filter.id + '" href="#" onclick="toggleFilterMoving(' + filter.id + ')" title="move the field over the 3D ground"><span class="icon-target"></span></a>' +        
-        '<a id="toggleFilter-' + filter.id + '" href="#" onclick="toggleFilter(' + filter.id + ')" title="toggle filter"><span class="' + (filter.enabled ? 'icon-checkbox-checked' : 'icon-checkbox-unchecked') + '"></span></a>' +
-        '</div>' +
-        '</div>';
-}
-
-function removeFilter(filterId) {
-    if (confirm("Are you sure you want to remove this force field?")) {
-        disableFilter(filterId);
-        removeFilterWall(filterId);        
-        removeFilterInfo(filterId);
-        filters[filterId] = null;
-    }
-}
-
 function removeFilterWall(filterId) {
     var filter = filters[filterId];
     scene.remove(filter.wall);
     filter.wallBody.remove();
     scene.remove(filter.wallMesh);
+    filter.wall = false
     //bodys.splice(filter.bodyIndex, 1);
     //meshs.splice(filter.bodyIndex, 1);
-}
-
-function removeFilterInfo(filterId) {
-    var filterElement = document.getElementById("filter-" + filterId);
-    filterElement.parentNode.removeChild(filterElement);
 }
 
 function clearNewFilterForm() {
@@ -797,6 +763,16 @@ function createNewFilter(name, expression) {
 
 function toggleStatsCubeInfo() {
     statsCubeActivated ? removeStatsCube() : addStatsCube() 
+}
+
+function doUpdatingStatsCube(delegate) {
+	if(statsCubeActivated) {
+		removeStatsCube()
+		delegate()
+		addStatsCube()
+	} else {
+		delegate()
+	}
 }
 
 function removeStatsCube() {
@@ -1061,16 +1037,27 @@ function setupSampleFilters() {
             expression: "$gender == 'M'"
         },
         {
+            name: "Women payments",
+            expression: "$gender == 'F'"
+        },
+        {
+            name: "Age group 1",
+            expression: "$age_range == 1"
+        },
+        {
+            name: "Age group 2 (36-45 years)",
+            expression: "$age_range == 2"
+        },
+        {
             name: "Age group 3 (36-45 years)",
             expression: "$age_range == 3"
-        }
+        },
     ];
     var filter;
     for (var i in sampleFilters) {
         filter = createNewFilter(sampleFilters[i].name, sampleFilters[i].expression);
         filter.enabled = false;
         filters[filter.id] = filter;
-        addFilterInfo(filter);      
     }    
 }
 
