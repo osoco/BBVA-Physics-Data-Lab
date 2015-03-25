@@ -73,7 +73,7 @@ $(function() {
         var periodMenuSelect = threeMenu.createMenuSelect('img/Config.png')
         
         for(var datasetZipCode in datasets) {
-            var zipCodeMenuAction = threeMenu.createActionMenuItem('img/Config.png', periodMenuSelect, function() {
+        	var zipCodeMenuAction = threeMenu.createActionMenuItem(buildImageNameByZipCode(datasetZipCode), periodMenuSelect, function() {
                 	zipcode = datasetZipCode
             }) 
             zipCodeMenuSelect.addMenuItem( zipCodeMenuAction)
@@ -101,6 +101,10 @@ $(function() {
         threeMenu.setRoot(zipCodeMenuSelect)
         threeMenu.open()
         open = true
+    }
+    
+    function buildImageNameByZipCode(zipCode) {
+    	return 'img/menu/' + zipCode + '.png'
     }
     
     // DEBUG
