@@ -779,8 +779,7 @@ function selectZipCode(datasetZipCode) {
 
 function selectPeriod(period) {
     month = period;
-    startAnalysis(true)
-	showLab()
+    initAnalysis()
 }
 
 function returnToMenu() {
@@ -802,6 +801,11 @@ function showLab() {
 	menuOpen = false 
 	document.getElementById('lab').style.display = 'block';
 	document.getElementById('menu').style.display = 'none';
+}
+
+function initAnalysis() {
+	startAnalysis(true)
+	showLab()
 }
 
 function toggleAnalysis() {
@@ -1209,8 +1213,14 @@ function initMenu() {
     	returnToMenu()
     }) 
     
+    var restartAnalysis = labMenu.createActionMenuItem('img/menu/restart.png', null, function() {
+    	initAnalysis()
+    })  
+    
     statusMenuSelect.addMenuItem(stopStartMenuAction)
     statusMenuSelect.addMenuItem(goToMenuAction)
+    statusMenuSelect.addMenuItem(restartAnalysis)
+    
     labMenu.addMenuSelect(statusMenuSelect)
     
     var filtersMenuSelect = labMenu.createMenuSelect('', {x:-700, y:400, z:-450})
