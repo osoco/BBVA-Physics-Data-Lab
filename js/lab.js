@@ -155,7 +155,7 @@ function init() {
     //leap-hands
     initLeap()
     initControls()
-       
+   
     // lights
     if (!isMobile){
         var ambientLight = new THREE.AmbientLight(0x555557);
@@ -242,6 +242,22 @@ function init() {
 
     initEvents();
     initOimoPhysics();
+}
+
+function initLegend() {
+	var geometry = new THREE.SphereGeometry( 10, 32, 32 )
+	var position = {x: 1000, y: 1000, z:1000}
+	var index = 0
+	for(category in textureColors) {
+		var categoryAsString = cagetoryAsString(category)
+		var categoryMaterial = mats[category]
+		var categorySphere = new THREE.Mesh( geometry, categoryMaterial);
+		scene.add(categorySphere)
+		categorySphere.position.x = 550
+		categorySphere.position.y = 600 - 25 * index
+		categorySphere.position.z = -550
+		index++
+	}
 }
 
 function addStaticBox(size, position, rotation, spec) {
@@ -753,6 +769,33 @@ function addStatsCube() {
     enableStatsCube();
 }
 
+function cagetoryAsString(category) {
+	var categories = {
+		"mx_barsandrestaurants" : 'bar/restaurants', 
+		"mx_food": "food",
+		"mx_services": "services",
+		"mx_office": "office",
+		"mx_car": "car",
+		"mx_auto": "auto",
+		"mx_travel": "travel",
+		"mx_sport": "sport",
+		"mx_beauty": "beauty",
+		"mx_health": "health",
+		"mx_fashion": "fashion",
+		"mx_leisure": "leisure"
+	}   
+	
+	return categories[category.replace('sph.', '')]
+}
+
+function buildTextureColorsByCategoryAsString() {
+	var textureColorsByCategoryAsString = {}
+	for (var category in textureColors) {
+		textureColorsByCategoryAsString[cagetoryAsString(category)] = textureColors[category]
+	}
+	return textureColorsByCategoryAsString
+}
+
 function genderAsString(gender) {
     var genders = {
         'M': 'Male',
@@ -1025,6 +1068,7 @@ function setupSampleFilters() {
 init();
 setupSampleFilters();
 initMenu();
+initLegend();
 loop();
 
 function radianToDegree(radian) {
@@ -1230,7 +1274,6 @@ function initMenu() {
     var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(1))
     
     for(var filterId in filters) {
-    	console.log(filterId)
     	var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), null, (function() {
     		var filterIdCopy = filterId
     		return function() {
@@ -1257,12 +1300,6 @@ function buildPositionForMenuByRowIndex(rowIndex) {
 
 function buildImageNameByFilterId(filterId) {
 	return 'img/menu/filters/' + filterId + '.png'
-}
-
-function buildLegend() {
-	var legendInfo = [
-	                  
-	]
 }
 
 function loop() {
