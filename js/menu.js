@@ -60,7 +60,7 @@
             zipCodeMenuSelect.addMenuItem( zipCodeMenuAction)
         }
         
-        for(var periodIndex in monthAsString) {
+        for(var periodIndex = monthAsString.length -1 ; periodIndex >= 0 ; periodIndex--) {
         	var periodMenuAction = threeMenu.createActionMenuItem(buildImageNameByPeriodIndex(periodIndex), null, (function() {
         		var periodIndexCopy = periodIndex 
         		return function() {
