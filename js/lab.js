@@ -78,6 +78,10 @@ var filters = {};
 var defaultFilterEnabled = true;
 var defaultFilterPositionX = -1000;
 var filterPositionDeltaX = [0, 200, 400,  1550, 1750, 1950];
+var menuDefaultX = -950
+var menuDefaultZ = -550
+var menuDefaultY = 600
+var menuDefaultDeltaY = 200
 var filterIdMoving = -1;
 var filterIdCounter = 0;
 var paymentsPerSphere = 250;
@@ -1204,7 +1208,7 @@ function initMenu() {
     	menuItemSize : 100
     })
     
-    var statusMenuSelect = labMenu.createMenuSelect('', {x:-700, y:600, z:-450})
+    var statusMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(0))
     var stopStartMenuAction = labMenu.createActionMenuItem('img/menu/pause.png', null, function() {
     	toggleAnalysis() 
     }) 
@@ -1223,7 +1227,7 @@ function initMenu() {
     
     labMenu.addMenuSelect(statusMenuSelect)
     
-    var filtersMenuSelect = labMenu.createMenuSelect('', {x:-700, y:400, z:-450})
+    var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(1))
     
     for(var filterId in filters) {
     	console.log(filterId)
@@ -1238,12 +1242,17 @@ function initMenu() {
     
     labMenu.addMenuSelect(filtersMenuSelect)
     
-    var statsSelect = labMenu.createMenuSelect('', {x:-700, y:200, z:-450})
+    var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(2))
     var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', null, function() {
     	toggleStatsCubeInfo()
     }) 
     statsSelect.addMenuItem(statsMenuItem)    
     labMenu.addMenuSelect(statsSelect)
+}
+
+function buildPositionForMenuByRowIndex(rowIndex) {
+	var yPosition = menuDefaultY - rowIndex* menuDefaultDeltaY
+	return {x: menuDefaultX, y: yPosition,  z:menuDefaultZ}
 }
 
 function buildImageNameByFilterId(filterId) {
