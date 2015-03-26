@@ -1259,6 +1259,12 @@ function buildImageNameByFilterId(filterId) {
 	return 'img/menu/filters/' + filterId + '.png'
 }
 
+function buildLegend() {
+	var legendInfo = [
+	                  
+	]
+}
+
 function loop() {
 	if(labOpen) {
 		vrControls.update();
