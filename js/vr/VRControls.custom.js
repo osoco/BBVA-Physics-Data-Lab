@@ -3,10 +3,10 @@
  * @author mrdoob / http://mrdoob.com
  */
 
-THREE.VRControls = function ( object, includePosition, scale, callback ) {
+THREE.VRControls = function ( object, includePosition, scale, centerPosition,  callback ) {
 
 	var vrInput;
-
+	centerPosition = centerPosition || {x:0, y:0, z:0}
 	var onVRDevices = function ( devices ) {
 
 		for ( var i = 0; i < devices.length; i ++ ) {
@@ -51,12 +51,12 @@ THREE.VRControls = function ( object, includePosition, scale, callback ) {
 			object.quaternion.copy( state.orientation );
 
 		}
-
+		
 		if ( includePosition && state.position !== null ) {
 			object.position.copy({
-				x : state.position.x*scale ,
-				y : state.position.y*scale ,
-				z : state.position.z*scale 
+				x : centerPosition.x + state.position.x*scale ,
+				y : centerPosition.y + state.position.y*scale ,
+				z : centerPosition.z + state.position.z*scale 
 			});
 
 		}

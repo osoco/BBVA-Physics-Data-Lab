@@ -1,5 +1,3 @@
-showMenu()
-
 ;(function() {
     window.datasetMenu = null
     
@@ -32,13 +30,16 @@ showMenu()
     var container = document.getElementById("menu")
     container.appendChild( renderer.domElement )
 
-    datasetMenu = initMenu()
-    loop()
-    
+    setTimeout(function() {
+    	vrControls.update()
+    	datasetMenu = initMenu()
+        loop()
+    }, 150)
+        
     function loop() {
 		if(menuOpen) {
 	    	vrControls.update()
-	        vrEffect.render(scene, camera)
+	    	vrEffect.render(scene, camera)
 	        datasetMenu.update()
 	        requestAnimationFrame( loop )
 		} else {
@@ -88,7 +89,8 @@ showMenu()
     	return 'img/menu/' + periodIndex + '.png'
     }
     
-    // DEBUG
+    menuControls = vrControls
     menuCamera = camera
 })()
     
+showMenu()

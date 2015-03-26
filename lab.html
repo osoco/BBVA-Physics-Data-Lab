@@ -15,79 +15,19 @@
             <span class="tool-text">Object Inspector</span>            
           </a>
         </li>
-        <li>
-          <a id="filterBtn" class="tool-item" href="#" onclick="toggleFiltersInfo()">
-            <span class="icon-magnet icon"></span><br/>
-            <span class="tool-text">Magnetic Fields</span>
-          </a>
-        </li>
-        <li>
-          <a id="statsCubeBtn" class="tool-item" href="#" onclick="toggleStatsCubeInfo()">
-            <span class="icon-stats icon"></span><br/>
-            <span class="tool-text">Stats Cube</span>
-          </a>
-        </li>
-      </ul>
-
-      <ul class="github">
-        <li>
-          <a class="tool-item" href="https://github.com/luque/BBVA-Physics-Data-Lab">
-            <span class="icon-github icon"></span><br/>
-            <span class="tool-text">Source Code</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-
+      </ul>  
     <div id="inspectorInfo">
       <div class="subtoolbar-header">Object Inspector</div>
       <p class="subtoolbar-info">You can point and click over any sphere to inspect the data it represents.</p>
       <div class="content"></div>
     </div>
 
-    <div id="filtersInfo">
-      <div class="subtoolbar-header">Magnetic Fields</div>
-      <p>You can create several magnetic fields (a.k.a. filters) to take apart the spheres matching given criteria out of the transparent box</p>
-      <a href="#" class="showMore" onclick="toggleMoreFilterInstructions()">show instructions</a>
-      <div id="moreFilterInstructions">
-        <p>You can use the following <em>data variables</em> in your filter expressions: <code>$date</code>, <code>$category</code>, <code>$num_payments</code>, <code>$avg_payment</code>, <code>$gender</code> and <code>$age_range</code>.</p>
-
-         <p>Filter expressions support the following <em>comparison operators</em>: <code>==</code> (equals to), <code>!=</code> (not equals to), <code>></code> (greater than), <code>>=</code> (greater than or equals to), <code><</code> (less than), <code><=</code> (less than or equals to); and the <em>logical operators</em>: <code>&&</code> (and), <code>||</code> (or) and <code>!</code> (not).</p>
-         <p>Examples:</p>
-         
-         <dl>
-           <dt>Payments by men and average payment greater than or equals to 2,500:</dt><dd class="code">($gender == 'M') && ($avg_payment >= 2500)</dd>
-                                                                                                                                                                                                                                             <dt>Payments in mx_office category between 20131101 and 20131110:</dt>
-                                                                                                                                                                                                                                             <dd><code>($category == 'mx_office') && ($date >= '20131101') && ($date <= 20131110')</code></dd>
-         </dl>
-</p>
-       </div>
-
-       <div class="content">
-  
-        <div id="newFilter" class="filter">
-          <div class="filter-header">Add New Filter</div>
-          <div class="filter-contents">
-            <input type="text" id="newFilterName" placeholder="Give me a name"></input>
-            <textarea id="newFilterExpression" placeholder="Your filter expression here. E.g:"></textarea>
-            <a href="#" onclick="createFilter()" title="Add a new filter"><span class="icon-add"></span></a>
-          </div>
-        </div>
-
-      </div>
-    </div>
+</div>
 
     
     <div id='menu'></div>
     <div id='lab'></div>
-    
-    <div id="dayInfo"></div>
 
-    <footer>      
-      &copy; 2014 by <a href="http://twitter.com/rafael_luque">@rafael_luque</a> for <a href="">BBVA Innova Challenge MX</a>.
-      <a href="https://twitter.com/share" class="twitter-share-button" data-text="Feel the data at your hands with BBVA Physics Data Lab" data-via="rafael_luque" data-hashtags="bbvainnovachallenge" data-size="medium" data-url="http://luque.github.io/BBVA-Physics-Data-Lab/lab.html">Tweet</a>      
-    </footer>
-    
     <script src="js/three.min.js"></script>
     <script src="js/navigation.js"></script>
     

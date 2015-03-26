@@ -194,7 +194,6 @@ Object.defineProperty(Object.prototype, "extend", {
 	    
 	    init()
 		function init() {
-			camera.quaternion.y = 0.99
 			if(drawBackgraund) {
 				drawStars()
 			}

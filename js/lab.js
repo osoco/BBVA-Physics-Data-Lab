@@ -58,7 +58,7 @@ var zipcodeAsString = {
     44130: 'Ciudad Creativa Digital de Guadalajara (44130 zipcode)',
     11529: 'Museo Soumaya de Mexico DF (11529 zipcode)'
 };
-var monthAsString = ['Nov 2013', 'Dic 2013', 'Jan 2014', 'Feb 2014', 'Mar 2014', 'Apr 2014'];
+var monthAsString = ['Nov 2013', 'Dic 2013', 'Jan 2014', 'Feb 2014', 'Mar 2014']; //, 'Apr 2014'];
 var textureColors = {
     'sph.mx_barsandrestaurants': '#81c16a',
     'sph.mx_services': '#67b0b6',
@@ -358,8 +358,8 @@ function populateWorld() {
         y = (day - fromDay + 1) * yGapBetweenDays;
 
         //Performance only one category
-        //for (var categoryIdx = 0; categoryIdx < categories.length; categoryIdx++) {
-        for (var categoryIdx = 0; categoryIdx < 1; categoryIdx++) {
+        for (var categoryIdx = 0; categoryIdx < categories.length; categoryIdx++) {
+        //for (var categoryIdx = 0; categoryIdx < 1; categoryIdx++) {
             var category = categories[categoryIdx];
             var cubesByCategoryAndDay = dataset[category].stats[day].cube;
             
@@ -785,8 +785,8 @@ function selectPeriod(period) {
 
 function returnToMenu() {
 	stopAnalysis()
-    datasetMenu.open()
     showMenu()
+	datasetMenu.open()
 }
 
 function showMenu() {
@@ -794,6 +794,7 @@ function showMenu() {
 	labOpen = false
 	document.getElementById('menu').style.display = 'block';
 	document.getElementById('lab').style.display = 'none';
+	menuControls.update()
 }
 
 function showLab() {
@@ -1014,9 +1015,9 @@ function setupSampleFilters() {
 }
 
 init();
+setupSampleFilters();
 initMenu();
 loop();
-setupSampleFilters();
 
 function radianToDegree(radian) {
 	return radian * (180 / Math.PI);
@@ -1176,7 +1177,7 @@ function initControls() {
     //controls = new THREE.LeapPinchRotateControls( camera , controller );
 
 	// Moves (translates and rotates) the camera
-	  vrControls = new THREE.VRControls(camera, true, 1000);
+	  vrControls = new THREE.VRControls(camera, true, 1000, {x:0, y:0, z: -450});
 
 	  vrEffect = new THREE.VREffect(renderer);
 
@@ -1199,19 +1200,44 @@ function initMenu() {
     	menuItemSize : 100
     })
     
-    var statusMenuSelect = labMenu.createMenuSelect('img/Config.png', {x:-700, y:400, z:-400})
-    var stopStartMenuAction = labMenu.createActionMenuItem('img/Config.png', null, function() {
+    var statusMenuSelect = labMenu.createMenuSelect('', {x:-700, y:600, z:-450})
+    var stopStartMenuAction = labMenu.createActionMenuItem('img/menu/pause.png', null, function() {
     	toggleAnalysis() 
     }) 
     
-    var goToMenuAction = labMenu.createActionMenuItem('img/Config.png', null, function() {
+    var goToMenuAction = labMenu.createActionMenuItem('img/menu/return.png', null, function() {
     	returnToMenu()
     }) 
     
     statusMenuSelect.addMenuItem(stopStartMenuAction)
     statusMenuSelect.addMenuItem(goToMenuAction)
-        
     labMenu.addMenuSelect(statusMenuSelect)
+    
+    var filtersMenuSelect = labMenu.createMenuSelect('', {x:-700, y:400, z:-450})
+    
+    for(var filterId in filters) {
+    	console.log(filterId)
+    	var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), null, (function() {
+    		var filterIdCopy = filterId
+    		return function() {
+    			toggleFilter(filterIdCopy)
+    		}
+    	})()) 
+        filtersMenuSelect.addMenuItem(filterMenuItem)    
+    }
+    
+    labMenu.addMenuSelect(filtersMenuSelect)
+    
+    var statsSelect = labMenu.createMenuSelect('', {x:-700, y:200, z:-450})
+    var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', null, function() {
+    	toggleStatsCubeInfo()
+    }) 
+    statsSelect.addMenuItem(statsMenuItem)    
+    labMenu.addMenuSelect(statsSelect)
+}
+
+function buildImageNameByFilterId(filterId) {
+	return 'img/menu/filters/' + filterId + '.png'
 }
 
 function loop() {
