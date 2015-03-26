@@ -73,6 +73,15 @@ var textureColors = {
     'sph.mx_fashion':'#ff00ff',
     'sph.mx_leisure':'#ff0033'        
 };
+
+var captionPositionX = 500
+var captionPositionY = 800
+var captionPositionZ = -550
+var captionTextMargin = 50
+var captionDeltaY = 50
+var captionTextColor = 0x339933
+var captionTextHeight = 40
+
 var filterColors = [ '#633', '#363', '#336' ];
 var filters = {};
 var defaultFilterEnabled = true;
@@ -244,8 +253,8 @@ function init() {
     initOimoPhysics();
 }
 
-function initLegend() {
-	var geometry = new THREE.SphereGeometry( 10, 32, 32 )
+function initCaption() {
+	var geometry = new THREE.SphereGeometry( 20, 32, 32 )
 	var position = {x: 1000, y: 1000, z:1000}
 	var index = 0
 	for(category in textureColors) {
@@ -253,9 +262,15 @@ function initLegend() {
 		var categoryMaterial = mats[category]
 		var categorySphere = new THREE.Mesh( geometry, categoryMaterial);
 		scene.add(categorySphere)
-		categorySphere.position.x = 550
-		categorySphere.position.y = 600 - 25 * index
-		categorySphere.position.z = -550
+		
+		var positionY = captionPositionY - index * captionDeltaY 
+		categorySphere.position.x = captionPositionX
+		categorySphere.position.y = positionY
+		categorySphere.position.z = captionPositionZ
+		
+		var texPosition = [captionPositionX + captionTextMargin, positionY - captionTextHeight/2, captionPositionZ]
+		var text = buildAxisText(categoryAsString, captionTextColor, texPosition, [0,0,0])
+		scene.add(text)
 		index++
 	}
 }
@@ -1068,7 +1083,7 @@ function setupSampleFilters() {
 init();
 setupSampleFilters();
 initMenu();
-initLegend();
+initCaption();
 loop();
 
 function radianToDegree(radian) {
