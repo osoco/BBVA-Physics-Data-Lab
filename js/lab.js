@@ -867,6 +867,7 @@ function showLab() {
 }
 
 function initAnalysis() {
+	resetMenu()
 	startAnalysis(true)
 	showLab()
 }
@@ -1259,6 +1260,10 @@ function initControls() {
 	  };
 
 	  window.addEventListener("keypress", onkey, true);
+}
+
+function resetMenu() {
+	labMenu.reset()
 }
 
 function initMenu() {

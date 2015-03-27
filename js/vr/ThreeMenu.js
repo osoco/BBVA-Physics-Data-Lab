@@ -52,6 +52,12 @@ String.prototype.capitalize = function() {
 			drawer.drawMenuSelect(menuSelect)
 		}
 		
+		this.reset = function() {
+			for (var elementIndex in this.menuSelects) {
+				resetMenuItems(this.menuSelects[elementIndex])
+			}
+		}
+		
 		this.open = function() {
 			this.currentMenu = root
 			translateToCurrentMenu.call(this, true)
@@ -136,7 +142,14 @@ String.prototype.capitalize = function() {
 			translateToCurrentMenu.call(this)
 		}
 		
+		function resetMenuItems(menu) {
+			menu.doWithMenuItemsMeshes(null, function(menuItem ) {
+				menuItem.isChecked = false
+			})
+		}
+		
 		function resetFirstSelectionTime(menu, avoidedMenuItem) {
+			menu.needsUpdate = true
 			menu.doWithMenuItemsMeshes(avoidedMenuItem, function(menuItem, menuItemMesh) {
 				menuItem.firstSelectionTime = 0
 				menuItem.isSelected = false
