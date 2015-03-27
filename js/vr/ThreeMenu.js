@@ -75,8 +75,8 @@ Object.defineProperty(Object.prototype, "extend", {
 			return menuSelect
 		}
 		
-		this.createActionMenuItem = function(imageUrl, menuSelectToRedirect, action) {
-			var actionMenuItem = new ActionMenuItem(imageUrl, this.menuItemsCounter++, menuSelectToRedirect, action)
+		this.createActionMenuItem = function(imageUrl, checkedImageUrl, menuSelectToRedirect, action) {
+			var actionMenuItem = new ActionMenuItem(imageUrl, checkedImageUrl, this.menuItemsCounter++, menuSelectToRedirect, action)
 			return actionMenuItem
 		}
 		
@@ -162,9 +162,9 @@ Object.defineProperty(Object.prototype, "extend", {
 
 	function MenuDrawer(scene, camera, options) {
 		var DEFAULT_MENU_ITEM_SIZE = 10
-		var UNSELECTED_COLOR = 0x00ff00 
-		var PRESELECTED_COLOR = 0x00ffff
-		var SELECTED_COLOR = 0xff0000
+		var UNSELECTED_COLOR = null//0x00ff00 
+		var PRESELECTED_COLOR = 0x9BF2F1 // 0x00ffff
+		var SELECTED_COLOR = PRESELECTED_COLOR //0xff0000
 
 		var VIEW_CENTER_RADIOUS = 0.25
 		var VIEW_CENTER_TUBE_RADIOUS = 0.1
@@ -282,6 +282,15 @@ Object.defineProperty(Object.prototype, "extend", {
 			menuItem.unselectedMaterial = buildMenuMaterial(texture, UNSELECTED_COLOR)
 			menuItem.preSelectedMaterial = buildMenuMaterial(texture,PRESELECTED_COLOR)
 			menuItem.selectedMaterial = buildMenuMaterial(texture,SELECTED_COLOR)
+			
+			if(menuItem.checkedImageUrl) {
+				var checkedTexture = new THREE.ImageUtils.loadTexture( menuItem.imageUrl )
+				
+				menuItem.checkedUnselectedMaterial = buildMenuMaterial(texture, UNSELECTED_COLOR)
+				menuItem.checkedPreSelectedMaterial = buildMenuMaterial(texture,PRESELECTED_COLOR)
+				menuItem.checkedSelectedMaterial = buildMenuMaterial(texture,SELECTED_COLOR)
+			}
+			
 			var mesh = new THREE.Mesh(imgGeometry, menuItem.unselectedMaterial)
 			mesh.menuItem = menuItem
 			return mesh 
@@ -387,6 +396,11 @@ Object.defineProperty(Object.prototype, "extend", {
 	function MenuItem(imageUrl, id) {
 		this.id = id
 		this.imageUrl = imageUrl
+		this.isSelected = false
+			
+		this.material
+		this.preSelectedMaterial 
+		this.selectedMaterial
 	}
 	
 	MenuItem.prototype.extend({
@@ -406,10 +420,16 @@ Object.defineProperty(Object.prototype, "extend", {
 		
 	}
 	
-	function ActionMenuItem(imageUrl, id, menuSelectToRedirect, action) {
+	function ActionMenuItem(imageUrl,checkedImageUrl,id, menuSelectToRedirect, action) {
 		MenuItem.call(this, imageUrl, id)
+		this.chekedImageUrl = checkedImageUrl
 		this.menuSelectToRedirect = menuSelectToRedirect
 		this.action = action
+		this.isChecked = false
+		
+		this.checkedMaterial
+		this.checkedPreSelectedMaterial
+		this.checkedSelectedMaterial
 	}
 	
 	ActionMenuItem.prototype = new MenuItem()
@@ -422,15 +442,10 @@ Object.defineProperty(Object.prototype, "extend", {
 	
 	function MenuSelect(imageUrl, id) {
 		MenuItem.call(this, imageUrl, id)
-		this.isSelected = false
 
 		this.menuItems = []
 		this.threeMenuItems
 		this.currentRotation = 0
-		
-		this.material
-		this.preSelectedMaterial 
-		this.selectedMaterial
 	} 
 	
 	MenuSelect.prototype = new MenuItem()

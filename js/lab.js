@@ -1268,15 +1268,15 @@ function initMenu() {
     })
     
     var statusMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(0))
-    var stopStartMenuAction = labMenu.createActionMenuItem('img/menu/pause.png', null, function() {
+    var stopStartMenuAction = labMenu.createActionMenuItem('img/menu/pause.png', '', null, function() {
     	toggleAnalysis() 
     }) 
     
-    var goToMenuAction = labMenu.createActionMenuItem('img/menu/return.png', null, function() {
+    var goToMenuAction = labMenu.createActionMenuItem('img/menu/return.png', '', null, function() {
     	returnToMenu()
     }) 
     
-    var restartAnalysis = labMenu.createActionMenuItem('img/menu/restart.png', null, function() {
+    var restartAnalysis = labMenu.createActionMenuItem('img/menu/restart.png', '', null, function() {
     	initAnalysis()
     })  
     
@@ -1289,7 +1289,7 @@ function initMenu() {
     var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(1))
     
     for(var filterId in filters) {
-    	var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), null, (function() {
+    	var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), '', null, (function() {
     		var filterIdCopy = filterId
     		return function() {
     			toggleFilter(filterIdCopy)
@@ -1301,7 +1301,7 @@ function initMenu() {
     labMenu.addMenuSelect(filtersMenuSelect)
     
     var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(2))
-    var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', null, function() {
+    var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', '', null, function() {
     	toggleStatsCubeInfo()
     }) 
     statsSelect.addMenuItem(statsMenuItem)    

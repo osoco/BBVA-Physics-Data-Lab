@@ -50,18 +50,18 @@
     function initMenu() {
         var threeMenu = new THREE.Menu(scene, camera, projector, raycaster)
 
-        var zipCodeMenuSelect = threeMenu.createMenuSelect('img/Config.png')
-        var periodMenuSelect = threeMenu.createMenuSelect('img/Config.png')
+        var zipCodeMenuSelect = threeMenu.createMenuSelect('')
+        var periodMenuSelect = threeMenu.createMenuSelect('')
         
         for(var datasetZipCode in datasets) {
-        	var zipCodeMenuAction = threeMenu.createActionMenuItem(buildImageNameByZipCode(datasetZipCode), periodMenuSelect, function() {
+        	var zipCodeMenuAction = threeMenu.createActionMenuItem(buildImageNameByZipCode(datasetZipCode),'', periodMenuSelect, function() {
                 	selectZipCode(datasetZipCode)
             }) 
             zipCodeMenuSelect.addMenuItem( zipCodeMenuAction)
         }
         
         for(var periodIndex = monthAsString.length -1 ; periodIndex >= 0 ; periodIndex--) {
-        	var periodMenuAction = threeMenu.createActionMenuItem(buildImageNameByPeriodIndex(periodIndex), null, (function() {
+        	var periodMenuAction = threeMenu.createActionMenuItem(buildImageNameByPeriodIndex(periodIndex), '', null, (function() {
         		var periodIndexCopy = periodIndex 
         		return function() {
         			selectPeriod(periodIndexCopy)
@@ -70,7 +70,7 @@
             periodMenuSelect.addMenuItem(periodMenuAction)
         }
         
-        var peridodBackMenuAction = threeMenu.createActionMenuItem('img/Back.png', zipCodeMenuSelect, function() {}) 
+        var peridodBackMenuAction = threeMenu.createActionMenuItem('img/Back.png', '', zipCodeMenuSelect, function() {}) 
         periodMenuSelect.addMenuItem(peridodBackMenuAction)
         
         threeMenu.addMenuSelect(zipCodeMenuSelect)
