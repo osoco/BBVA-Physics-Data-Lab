@@ -109,7 +109,13 @@ var daysOfMonth = [
     30  // 5 -> 04/2014
 ];
 var currentDate = 0;
+var inspectorPositionZ = -450
+var inspectorPositionX = 0
+var inspectorPositionY = 600
+var inspectorPositionDeltaY = 75
+var inspectorTextColor = 0x339933
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
+var inspectorGroup;
 var statsCube;
 var vertices = {};
 var cubeJoints = [];
@@ -617,7 +623,7 @@ var rayTest = function () {
 
 function updateInspectionInfo(mesh) {
 	var metadata = mesh.userData
-	console.log(metadata.date + ' ' + metadata.category + ' ' +metadata.payments + ' ' +metadata.avg + ' ' +metadata.gender + ' ' + metadata.age)
+	buildInspectorInfo(metadata)
 }
 // UI Controls
 
@@ -630,6 +636,7 @@ function toggleInspector() {
     if (!inspectorActivated) {
     	resetSelectedMesh()
     	resetPreviousSelectedMesh()
+    	removeInspectorInfo()
     }
 }
 
@@ -905,6 +912,33 @@ function startAnalysis(repopulate) {
     }
     analysisStarted = true
 }
+
+function removeInspectorInfo() {
+	if(inspectorGroup) {
+		scene.remove(inspectorGroup)
+	}
+	inspectorGroup = null
+}
+
+function buildInspectorInfo(metadata) {
+	removeInspectorInfo()
+	inspectorGroup = new THREE.Group();
+	inspectorGroup.add(buildInspectorInfoMetadataLabels(metadata))
+	scene.add(inspectorGroup)
+}
+
+function buildInspectorInfoMetadataLabels(metadata) {
+	var texts = new THREE.Object3D();   
+    var fields = ['date', 'category', 'payments', 'avg', 'gender','age']
+    for(fieldIndex in fields) {
+    	var fieldName = fields[fieldIndex]
+    	var fieldValue = metadata[fieldName]
+    	var textPosition = [inspectorPositionX, inspectorPositionY - fieldIndex *inspectorPositionDeltaY , inspectorPositionZ]
+    	texts.add(buildAxisText(fieldName + ': ' + fieldValue, inspectorTextColor, textPosition , [0, 0, 0]));
+    }
+	return texts
+}
+
 
 function buildCube(position, labels, length) {
     var axes = buildCubeAxes(position, length);
