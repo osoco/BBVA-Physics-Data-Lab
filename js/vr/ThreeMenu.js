@@ -23,7 +23,7 @@ String.prototype.capitalize = function() {
     /**
      * Options:
      * drawAsLinear -> draw linear menuSelect
-     * drawBackgraund -> draw background
+     * drawBackground -> draw background
      */
 	function Menu(scene, camera, projector, raycaster, options) {
 		options = options || {}
@@ -203,16 +203,17 @@ String.prototype.capitalize = function() {
 		var STARS_NUMBER = 10000
 		var viewCenter = createViewCenter()
 		
+		var BACKGROUND_IMAGE = 'img/menu/background.jpg'
 		var drawAsLinear = options.drawAsLinear
-	    var drawBackgraund = options.drawBackground
+	    var drawBackground = options.drawBackground
 	    var menuItemSize = options.menuItemSize || DEFAULT_MENU_ITEM_SIZE  
 	    
 	    var MENU_LINEAR_DISTANCE = menuItemSize * 1.2
 	    
 	    init()
 		function init() {
-			if(drawBackgraund) {
-				drawStars()
+			if(drawBackground) {
+				initBackground()
 			}
 		}
 		
@@ -226,19 +227,13 @@ String.prototype.capitalize = function() {
 			return torus
 		}
 
-		function drawStars() {
-			var geometry = new THREE.Geometry();
-
-            for ( var i = 0; i < STARS_NUMBER; i ++ ) {
-            	var vertex = new THREE.Vector3();
-                vertex.x = THREE.Math.randFloatSpread( 2000 );
-                vertex.y = THREE.Math.randFloatSpread( 2000 );
-                vertex.z = THREE.Math.randFloatSpread( 2000 );
-                geometry.vertices.push( vertex );
-            }
-
-            var particles = new THREE.PointCloud( geometry, new THREE.PointCloudMaterial( { color: 0x888888 } ) );
-            scene.add( particles );
+		function initBackground() {
+			var texture = new THREE.ImageUtils.loadTexture(BACKGROUND_IMAGE)
+			var geometry = new THREE.SphereGeometry(1000, 100,100);
+			var material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide, transparent: false});
+			var background = new THREE.Mesh(geometry, material)
+			
+			scene.add(background)
 		}
 		
 		this.updateMenu = function(menu, preSelectedMenuItem, preSelectedMenuItemMesh) {
@@ -294,6 +289,7 @@ String.prototype.capitalize = function() {
 
 		function createMeshForMenuItem(menuItem) {
 			var texture = new THREE.ImageUtils.loadTexture( menuItem.imageUrl )
+			//var imgGeometry = new THREE.SphereGeometry(400, 100,100);
 			var imgGeometry = new THREE.PlaneGeometry(menuItemSize,menuItemSize)
 
 			menuItem.unselectedMaterial = buildMenuMaterial(texture, UNSELECTED_COLOR)
