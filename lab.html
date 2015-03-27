@@ -7,25 +7,6 @@
   <link rel="stylesheet" href="css/lab.css"/>
 </head>
 <body>
-   <!-- 
-    <div id="tools">
-      <ul>
-        <li>
-          <a id="inspectorBtn" class="tool-item" href="#" onclick="toggleInspector()">
-            <span class="icon-target icon"></span><br/>
-            <span class="tool-text">Object Inspector</span>            
-          </a>
-        </li>
-      </ul>  
-    <div id="inspectorInfo">
-      <div class="subtoolbar-header">Object Inspector</div>
-      <p class="subtoolbar-info">You can point and click over any sphere to inspect the data it represents.</p>
-      <div class="content"></div>
-    </div>
- -->
-
-
-    
     <div id='menu'></div>
     <div id='lab'></div>
 
@@ -71,8 +52,8 @@ window.twttr=(function(d,s,id){var t,js,fjs=d.getElementsByTagName(s)[0];if(d.ge
             returnToMenu()
           }
           if (event.key === 't') {
-            console.log("showing tools")
-            showTools();
+            console.log("inspector")
+            toggleInspector();
           }
           
           if (event.key === 'c') {
