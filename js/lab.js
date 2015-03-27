@@ -1268,7 +1268,7 @@ function initMenu() {
     })
     
     var statusMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(0))
-    var stopStartMenuAction = labMenu.createActionMenuItem('img/menu/pause.png', '', null, function() {
+    var stopStartMenuAction = labMenu.createActionMenuItem('img/menu/pause.png', 'img/menu/pause_checked.png', null, function() {
     	toggleAnalysis() 
     }) 
     
@@ -1289,7 +1289,8 @@ function initMenu() {
     var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(1))
     
     for(var filterId in filters) {
-    	var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), '', null, (function() {
+    	var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), 
+    				buildCheckedImageNameByFilterId(filterId), null, (function() {
     		var filterIdCopy = filterId
     		return function() {
     			toggleFilter(filterIdCopy)
@@ -1301,7 +1302,7 @@ function initMenu() {
     labMenu.addMenuSelect(filtersMenuSelect)
     
     var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(2))
-    var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', '', null, function() {
+    var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', 'img/menu/statsCube_checked.png', null, function() {
     	toggleStatsCubeInfo()
     }) 
     statsSelect.addMenuItem(statsMenuItem)    
@@ -1315,6 +1316,10 @@ function buildPositionForMenuByRowIndex(rowIndex) {
 
 function buildImageNameByFilterId(filterId) {
 	return 'img/menu/filters/' + filterId + '.png'
+}
+
+function buildCheckedImageNameByFilterId(filterId) {
+	return 'img/menu/filters/' + filterId + '_checked.png'
 }
 
 function loop() {

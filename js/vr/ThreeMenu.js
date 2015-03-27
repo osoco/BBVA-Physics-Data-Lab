@@ -12,6 +12,10 @@ Object.defineProperty(Object.prototype, "extend", {
     configurable: false
 })
 
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 ;(function() {
 	function getCurrentTime() {
 		return new Date().getTime()
@@ -236,16 +240,16 @@ Object.defineProperty(Object.prototype, "extend", {
 		}
 
 		function setMenuItemAsSelected(selectedMenuItem, selectedMenuItemMesh) {
-			selectedMenuItemMesh.material = selectedMenuItem.selectedMaterial
+			selectedMenuItemMesh.material = selectedMenuItem.getSelectedMaterial()
 		}
 
 		function setMenuItemAsPreSelected(preSelectedMenuItem, preselectedMenuItemMesh) {
-			preselectedMenuItemMesh.material = preSelectedMenuItem.preSelectedMaterial
+			preselectedMenuItemMesh.material = preSelectedMenuItem.getPreSelectedMaterial()
 		}
 
 		function setMenuItemsAsUnSelected(menu, selectedMenuItem) {
 			menu.doWithMenuItemsMeshes(selectedMenuItem, function(menuItem, menuItemMesh) {
-				menuItemMesh.material = menuItem.unselectedMaterial
+				menuItemMesh.material = menuItem.getUnselectedMaterial()
 			})
 			var menuItems = menu.menuItems
 		}
@@ -284,11 +288,11 @@ Object.defineProperty(Object.prototype, "extend", {
 			menuItem.selectedMaterial = buildMenuMaterial(texture,SELECTED_COLOR)
 			
 			if(menuItem.checkedImageUrl) {
-				var checkedTexture = new THREE.ImageUtils.loadTexture( menuItem.imageUrl )
+				var checkedTexture = new THREE.ImageUtils.loadTexture( menuItem.checkedImageUrl )
 				
-				menuItem.checkedUnselectedMaterial = buildMenuMaterial(texture, UNSELECTED_COLOR)
-				menuItem.checkedPreSelectedMaterial = buildMenuMaterial(texture,PRESELECTED_COLOR)
-				menuItem.checkedSelectedMaterial = buildMenuMaterial(texture,SELECTED_COLOR)
+				menuItem.checkedUnselectedMaterial = buildMenuMaterial(checkedTexture, UNSELECTED_COLOR)
+				menuItem.checkedPreSelectedMaterial = buildMenuMaterial(checkedTexture,PRESELECTED_COLOR)
+				menuItem.checkedSelectedMaterial = buildMenuMaterial(checkedTexture,SELECTED_COLOR)
 			}
 			
 			var mesh = new THREE.Mesh(imgGeometry, menuItem.unselectedMaterial)
@@ -397,15 +401,24 @@ Object.defineProperty(Object.prototype, "extend", {
 		this.id = id
 		this.imageUrl = imageUrl
 		this.isSelected = false
-			
-		this.material
-		this.preSelectedMaterial 
-		this.selectedMaterial
 	}
 	
 	MenuItem.prototype.extend({
 		onSelect : function() {
 			console.log("Error: this method must be override")
+		},
+		getPreSelectedMaterial : function() {
+			return this.getMaterialByName('preSelectedMaterial')
+		},
+		getSelectedMaterial : function() {
+			return this.getMaterialByName('selectedMaterial')
+		},
+		getUnselectedMaterial : function() {
+			return this.getMaterialByName('unselectedMaterial')
+		},
+		getMaterialByName: function(materialName) {
+			var materialName = (this.checkedImageUrl && this.isChecked) ? 'checked' + materialName.capitalize() : materialName 
+			return this[materialName]	
 		}
 	}) 
 	
@@ -417,25 +430,21 @@ Object.defineProperty(Object.prototype, "extend", {
 	
 	CheckMenuItem.prototype = {
 		constructor : CheckMenuItem
-		
 	}
 	
 	function ActionMenuItem(imageUrl,checkedImageUrl,id, menuSelectToRedirect, action) {
 		MenuItem.call(this, imageUrl, id)
-		this.chekedImageUrl = checkedImageUrl
+		this.checkedImageUrl = checkedImageUrl
 		this.menuSelectToRedirect = menuSelectToRedirect
 		this.action = action
 		this.isChecked = false
-		
-		this.checkedMaterial
-		this.checkedPreSelectedMaterial
-		this.checkedSelectedMaterial
 	}
 	
 	ActionMenuItem.prototype = new MenuItem()
 	ActionMenuItem.prototype.extend({
 		constructor : ActionMenuItem,	
 		onSelect : function(threeMenu) {
+			this.isChecked = !this.isChecked
 			threeMenu.onActionMenuItemSelected(this)
 		}
 	})
