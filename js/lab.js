@@ -335,7 +335,8 @@ function clearFilters() {
         filter = filters[filterKeys[i]];
         filter.wall = null;
         filter.wallBody = null;
-        filter.wallMesh = null;                
+        filter.wallMesh = null;
+        filter.enabled = false;
     }
 }
 
