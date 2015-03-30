@@ -75,11 +75,13 @@ var textureColors = {
     'sph.mx_leisure':'#ff0033'        
 };
 
-var captionPositionX = 500
+var captionPositionX = 1050
 var captionPositionY = 800
 var captionPositionZ = -550
 var captionTextMargin = 50
 var captionDeltaY = 50
+var rotationAngle = Math.PI / 3
+var captionRotation = [0, 2*Math.PI - rotationAngle ,0]
 var captionTextColor = 0x339933
 var captionTextHeight = 40
 
@@ -109,9 +111,9 @@ var daysOfMonth = [
     30  // 5 -> 04/2014
 ];
 var currentDate = 0;
-var inspectorPositionZ = -450
-var inspectorPositionX = 0
-var inspectorPositionY = 600
+var inspectorPositionX = 250
+var inspectorPositionY = 775
+var inspectorPositionZ = -550
 var inspectorPositionDeltaY = 75
 var inspectorTextColor = 0x339933
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
@@ -275,8 +277,12 @@ function initCaption() {
 		categorySphere.position.y = positionY
 		categorySphere.position.z = captionPositionZ
 		
-		var texPosition = [captionPositionX + captionTextMargin, positionY - captionTextHeight/2, captionPositionZ]
-		var text = buildAxisText(categoryAsString, captionTextColor, texPosition, [0,0,0])
+		var texPosition = [
+            (captionPositionX) + captionTextMargin *Math.cos(rotationAngle), 
+            positionY - captionTextHeight/2, 
+            captionPositionZ + captionTextMargin *Math.sin(rotationAngle)
+        ]
+		var text = buildAxisText(categoryAsString, captionTextColor, texPosition, captionRotation)
 		scene.add(text)
 		index++
 	}
@@ -813,18 +819,18 @@ function addStatsCube() {
 
 function cagetoryAsString(category) {
 	var categories = {
-		"mx_barsandrestaurants" : 'bar/restaurants', 
-		"mx_food": "food",
-		"mx_services": "services",
-		"mx_office": "office",
-		"mx_car": "car",
-		"mx_auto": "auto",
-		"mx_travel": "travel",
-		"mx_sport": "sport",
-		"mx_beauty": "beauty",
-		"mx_health": "health",
-		"mx_fashion": "fashion",
-		"mx_leisure": "leisure"
+		"mx_barsandrestaurants" : 'Bar/restaurants', 
+		"mx_food": "Food",
+		"mx_services": "Services",
+		"mx_office": "Office",
+		"mx_car": "Car",
+		"mx_auto": "Auto",
+		"mx_travel": "Travel",
+		"mx_sport": "Sport",
+		"mx_beauty": "Beauty",
+		"mx_health": "Health",
+		"mx_fashion": "Fashion",
+		"mx_leisure": "Leisure"
 	}   
 	
 	return categories[category.replace('sph.', '')]
@@ -927,14 +933,33 @@ function buildInspectorInfo(metadata) {
 	scene.add(inspectorGroup)
 }
 
+function dateAsString(date) {
+	return date.slice(6,8) + "/" + date.slice(4,6) + "/" + date.slice(0,4) 
+}
+
+function avgAsString(avg) {
+	return avg + " $"
+}
+
 function buildInspectorInfoMetadataLabels(metadata) {
 	var texts = new THREE.Object3D();   
-    var fields = ['date', 'category', 'payments', 'avg', 'gender','age']
-    for(fieldIndex in fields) {
-    	var fieldName = fields[fieldIndex]
+    var fields = {
+    		'date': {name: 'Date', formatterFunction:dateAsString},
+    		'category': {name: 'Category', formatterFunction: cagetoryAsString},
+    		'payments': {name: 'Number of payments', formatterFunction:null},
+    		'avg': {name: 'Average payment', formatterFunction:avgAsString},
+    		'gender': {name: 'Gender', formatterFunction: genderAsString},
+    		'age': {name: 'Age', formatterFunction: ageAsString}
+    	}
+    var fieldIndex = 0
+    for(fieldName in fields) {
+    	var fieldInfo = fields[fieldName]
     	var fieldValue = metadata[fieldName]
+    	fieldValue = fieldInfo.formatterFunction ? fieldInfo.formatterFunction.call(null, fieldValue) : fieldValue
+    			
     	var textPosition = [inspectorPositionX, inspectorPositionY - fieldIndex *inspectorPositionDeltaY , inspectorPositionZ]
-    	texts.add(buildAxisText(fieldName + ': ' + fieldValue, inspectorTextColor, textPosition , [0, 0, 0]));
+    	texts.add(buildAxisText(fieldInfo.name + ': ' + fieldValue, inspectorTextColor, textPosition , [0, 0, 0]));
+    	fieldIndex++
     }
 	return texts
 }
