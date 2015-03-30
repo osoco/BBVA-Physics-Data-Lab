@@ -6,7 +6,8 @@ var meshs = [];
 var bodys=[];
 var joints=[];
 var grounds = [];
-var selectedMesh, previousSelectedMeshMaterial;
+var SELECTION_TIME = 1000;
+var selectedMesh, previousSelectedMeshMaterial, selectedMeshOriginalMaterial, previousSelectedMesh;
 var filterWallBody, filterWall1, filterWall2, filterWall3, filterWall4;
 var isMobile = false;
 var antialias = true;
@@ -108,7 +109,13 @@ var daysOfMonth = [
     30  // 5 -> 04/2014
 ];
 var currentDate = 0;
+var inspectorPositionZ = -450
+var inspectorPositionX = 0
+var inspectorPositionY = 600
+var inspectorPositionDeltaY = 75
+var inspectorTextColor = 0x339933
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
+var inspectorGroup;
 var statsCube;
 var vertices = {};
 var cubeJoints = [];
@@ -335,7 +342,8 @@ function clearFilters() {
         filter = filters[filterKeys[i]];
         filter.wall = null;
         filter.wallBody = null;
-        filter.wallMesh = null;                
+        filter.wallMesh = null;
+        filter.enabled = false;
     }
 }
 
@@ -566,33 +574,40 @@ function basicTexture(texture){
     return tx;
 }
 
+function currentTime() {
+	return new Date().getTime()
+}
 // Raycast Test
 var rayTest = function () {
-    if (inspectorActivated && mouse.down) {
-        var vector = new THREE.Vector3( mouse.mx, mouse.my, 1 );
+	if(inspectorActivated) {
+		var vector = new THREE.Vector3( 0, 0, 1 );
         projector.unprojectVector( vector, camera );
         raycaster.set( camera.position, vector.sub(camera.position).normalize());
         var intersects = raycaster.intersectObjects(spheres.children, true);
         if (intersects.length > 0) {
-            if (selectedMesh) {
-                selectedMesh.material = previousSelectedMeshMaterial;
+            var currentSelectedMesh = intersects[0].object; 
+            if (currentSelectedMesh != selectedMesh) {
+                if(selectedMesh && !selectedMesh.isSelected) {
+                	resetSelectedMesh()
+                } else {
+                	previousSelectedMesh = selectedMesh
+                	previousSelectedMeshMaterial = selectedMeshOriginalMaterial
+                }
+                startSelectionTime = currentTime()
+                selectedMesh = currentSelectedMesh
+                selectedMeshOriginalMaterial = selectedMesh.material;
+                selectedMesh.material = selectedMesh.material.clone();
+                selectedMesh.material.color.setRGB(.5,0,0);
+            } else if(!selectedMesh.isSelected && currentTime() - startSelectionTime > SELECTION_TIME) {
+            	resetPreviousSelectedMesh()
+            	selectedMesh.material.color.setRGB(.1,0,0);
+            	updateInspectionInfo(selectedMesh)
+            	selectedMesh.isSelected = true
             }
-            selectedMesh = intersects[0].object;
-            var selectedBody = bodys[selectedMesh.name].body;
-            var metadata = selectedMesh.userData;
-            document.querySelector("#inspectorInfo .content").innerHTML =
-                "<dl><dt>Date</dt><dd>" + metadata.date + "</dd>" +
-                "<dt>Category</dt><dd>" + metadata.category + "</dd>" +
-                "<dt>Num. payments</dt><dd>" + metadata.payments + "</dd>" +
-                "<dt>Avg. payment</dt><dd>" + metadata.avg + "</dd>" +
-                "<dt>Gender</dt><dd>" + genderAsString(metadata.gender) + "</dd>" +
-                "<dt>Age</dt><dd>" + ageAsString(metadata.age) + "</dd></dl>";
-            //selectedBody.resetPosition(selectedBody.position.x, 200, selectedBody.position.z);
-            previousSelectedMeshMaterial = selectedMesh.material;
-            selectedMesh.material = selectedMesh.material.clone();
-            selectedMesh.material.color.setRGB(.5,0,0);
         }        
-    }
+	}
+    
+	/*
     if (filterIdMoving > -1) {
         var movingFilter = filters[filterIdMoving];
         var vector = new THREE.Vector3(mouse.mx, mouse.my, 1);
@@ -603,8 +618,13 @@ var rayTest = function () {
             movingFilter.wall.position.copy(intersects[0].point);
         }
     }
+    */
 }
 
+function updateInspectionInfo(mesh) {
+	var metadata = mesh.userData
+	buildInspectorInfo(metadata)
+}
 // UI Controls
 
 function getCurrentDataset() {
@@ -613,18 +633,25 @@ function getCurrentDataset() {
 
 function toggleInspector() {
     inspectorActivated = !inspectorActivated;
-    if (inspectorActivated) {
-        turnOffFiltersInfo();
-        document.getElementById("inspectorBtn").className = "activated";
-        document.getElementById("inspectorInfo").className = "shown";        
-    } else {
-        document.getElementById("inspectorInfo").className = "";        
-        document.querySelector("#inspectorInfo .content").innerHTML = "";        
-        document.getElementById("inspectorBtn").className = "";
-        if (selectedMesh) {
-            selectedMesh.material = previousSelectedMeshMaterial;
-        }
+    if (!inspectorActivated) {
+    	resetSelectedMesh()
+    	resetPreviousSelectedMesh()
+    	removeInspectorInfo()
     }
+}
+
+function resetSelectedMesh() {
+	if(selectedMesh) { 
+    	selectedMesh.material = selectedMeshOriginalMaterial;
+    	selectedMesh.isSelected = false;
+	}
+}
+
+function resetPreviousSelectedMesh() {
+	if(previousSelectedMesh) {
+		previousSelectedMesh.isSelected = false
+    	previousSelectedMesh.material = previousSelectedMeshMaterial
+	}
 }
 
 function turnOffInspector() {
@@ -866,6 +893,7 @@ function showLab() {
 }
 
 function initAnalysis() {
+	resetMenu()
 	startAnalysis(true)
 	showLab()
 }
@@ -885,15 +913,32 @@ function startAnalysis(repopulate) {
     analysisStarted = true
 }
 
-function showTools() {
-    document.getElementById("tools").className = 'shown';
+function removeInspectorInfo() {
+	if(inspectorGroup) {
+		scene.remove(inspectorGroup)
+	}
+	inspectorGroup = null
 }
 
-function hideTools() {
-    document.getElementById("tools").className = '';
-    turnOffInspector();
-    turnOffFiltersInfo();    
+function buildInspectorInfo(metadata) {
+	removeInspectorInfo()
+	inspectorGroup = new THREE.Group();
+	inspectorGroup.add(buildInspectorInfoMetadataLabels(metadata))
+	scene.add(inspectorGroup)
 }
+
+function buildInspectorInfoMetadataLabels(metadata) {
+	var texts = new THREE.Object3D();   
+    var fields = ['date', 'category', 'payments', 'avg', 'gender','age']
+    for(fieldIndex in fields) {
+    	var fieldName = fields[fieldIndex]
+    	var fieldValue = metadata[fieldName]
+    	var textPosition = [inspectorPositionX, inspectorPositionY - fieldIndex *inspectorPositionDeltaY , inspectorPositionZ]
+    	texts.add(buildAxisText(fieldName + ': ' + fieldValue, inspectorTextColor, textPosition , [0, 0, 0]));
+    }
+	return texts
+}
+
 
 function buildCube(position, labels, length) {
     var axes = buildCubeAxes(position, length);
@@ -1260,6 +1305,10 @@ function initControls() {
 	  window.addEventListener("keypress", onkey, true);
 }
 
+function resetMenu() {
+	labMenu.reset()
+}
+
 function initMenu() {
     labMenu = new THREE.Menu(scene, camera, projector, raycaster, {
     	drawAsLinear: true, 
@@ -1304,8 +1353,12 @@ function initMenu() {
     var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(2))
     var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', 'img/menu/statsCube_checked.png', null, function() {
     	toggleStatsCubeInfo()
+    })
+    var inspectorMenuItem = labMenu.createActionMenuItem('img/menu/inspector.png', 'img/menu/inspector_checked.png', null, function() {
+    	toggleInspector()
     }) 
-    statsSelect.addMenuItem(statsMenuItem)    
+    statsSelect.addMenuItem(statsMenuItem)
+    statsSelect.addMenuItem(inspectorMenuItem)
     labMenu.addMenuSelect(statsSelect)
 }
 

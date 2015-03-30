@@ -48,7 +48,7 @@
     }
    
     function initMenu() {
-        var threeMenu = new THREE.Menu(scene, camera, projector, raycaster)
+        var threeMenu = new THREE.Menu(scene, camera, projector, raycaster, {drawBackground:true})
 
         var zipCodeMenuSelect = threeMenu.createMenuSelect('')
         var periodMenuSelect = threeMenu.createMenuSelect('')
