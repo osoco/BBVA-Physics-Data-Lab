@@ -55,8 +55,11 @@
         
         for(var datasetZipCode in datasets) {
         	var zipCodeMenuAction = threeMenu.createActionMenuItem(buildImageNameByZipCode(datasetZipCode),'', periodMenuSelect, function() {
-                	selectZipCode(datasetZipCode)
-            }) 
+                    var dataSetZipCodeCopy = datasetZipCode
+                    return function() {
+                	   selectZipCode(dataSetZipCodeCopy)
+                    }
+                }()) 
             zipCodeMenuSelect.addMenuItem( zipCodeMenuAction)
         }
         

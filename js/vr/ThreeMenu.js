@@ -180,7 +180,7 @@ String.prototype.capitalize = function() {
 	function MenuDrawer(scene, camera, options) {
 		var DEFAULT_MENU_ITEM_SIZE = 10
 		var UNSELECTED_COLOR = null//0x00ff00 
-		var PRESELECTED_COLOR = 0x9BF2F1 // 0x00ffff
+		var PRESELECTED_COLOR = 0xFFCE00 // 0x00ffff
 		var SELECTED_COLOR = PRESELECTED_COLOR //0xff0000
 
 		var VIEW_CENTER_RADIOUS = 0.25
@@ -188,7 +188,7 @@ String.prototype.capitalize = function() {
 		var VIEW_RADIAL_SEGMENTS = 8*10
 		var VIEW_TUBULAR_SEGMENTS = 6*15
 		var VIEW_ARC = Math.PI * 2;
-		var VIEW_CENTER_COLOR = 0xffff00
+		var VIEW_CENTER_COLOR = 0x888888
 		var VIEW_CENTER_DISTANCE_FACTOR = 5
 
 		var MENU_RADIOUS = 30

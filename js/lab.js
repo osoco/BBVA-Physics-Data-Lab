@@ -61,22 +61,23 @@ var zipcodeAsString = {
 };
 var monthAsString = ['Nov 2013', 'Dic 2013', 'Jan 2014', 'Feb 2014', 'Mar 2014']; //, 'Apr 2014'];
 var textureColors = {
-    'sph.mx_barsandrestaurants': '#81c16a',
-    'sph.mx_services': '#67b0b6',
-    'sph.mx_food': '#d66f6c',
-    'sph.mx_office': '#c0a0e0',
-    'sph.mx_car': '#fa842c',
-    'sph.mx_auto':'#fb2d22',
-    'sph.mx_travel': '#ebef4e',
-    'sph.mx_sport': '#2c66a4',
-    'sph.mx_beauty': '#ecc82c',
-    'sph.mx_health':'#fffeef',
-    'sph.mx_fashion':'#ff00ff',
-    'sph.mx_leisure':'#ff0033'        
+    'sph.mx_barsandrestaurants': '#18509A',
+    'sph.mx_services': '#1F6CAF',
+    'sph.mx_food': '#2F9AD1',
+    'sph.mx_office': '#58BAE5',
+    'sph.mx_car': '#435B00',
+    'sph.mx_auto':'#658E0A',
+    'sph.mx_travel': '#89BA35',
+    'sph.mx_sport': '#DAE500',
+    'sph.mx_beauty': '#FF3600',
+    'sph.mx_health':'#FF8500',
+    'sph.mx_fashion':'#FFAA00',
+    'sph.mx_leisure':'#FFFF00'        
 };
 
-var textColor = 0x339999
-var statsCubeColor = 0x333333
+var textColor = 0xFFFFFF
+var labelTextColor = 0xAAAAAA
+var statsCubeColor = 0xA5A5A5
 
 var captionPositionX = 1050
 var captionPositionY = 800
@@ -86,7 +87,7 @@ var captionDeltaY = 50
 var rotationAngle = Math.PI / 3
 var captionRotation = [0, 2*Math.PI - rotationAngle ,0]
 var captionTextColor = textColor
-var captionTextHeight = 40
+var captionTextHeight = 20
 
 var filterColors = [ '#633', '#363', '#336' ];
 var filters = {};
@@ -118,7 +119,7 @@ var currentDate = 0;
 var inspectorPositionX = 250
 var inspectorPositionY = 775
 var inspectorPositionZ = -550
-var inspectorPositionDeltaY = 75
+var inspectorPositionDeltaY = 50
 var inspectorTextColor = textColor
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
 var inspectorGroup;
@@ -1013,8 +1014,8 @@ function buildCubeLabels(position, labels, length) {
 function buildAxisText(text, colorHex, position, rotation) {
     var textMaterial = new THREE.MeshBasicMaterial({ color: colorHex, overdraw: 0.5 });
     var text3d = new THREE.TextGeometry(text, {
-	size: 40,
-	height: 10,
+	size: captionTextHeight,
+	height: captionTextHeight * 0.1,
 	curveSegments: 2,
 	font: "helvetiker"
     });
