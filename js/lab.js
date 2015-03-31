@@ -75,6 +75,9 @@ var textureColors = {
     'sph.mx_leisure':'#ff0033'        
 };
 
+var textColor = 0x339999
+var statsCubeColor = 0x333333
+
 var captionPositionX = 1050
 var captionPositionY = 800
 var captionPositionZ = -550
@@ -82,7 +85,7 @@ var captionTextMargin = 50
 var captionDeltaY = 50
 var rotationAngle = Math.PI / 3
 var captionRotation = [0, 2*Math.PI - rotationAngle ,0]
-var captionTextColor = 0x339933
+var captionTextColor = textColor
 var captionTextHeight = 40
 
 var filterColors = [ '#633', '#363', '#336' ];
@@ -110,19 +113,18 @@ var daysOfMonth = [
     31, // 4 -> 03/2014
     30  // 5 -> 04/2014
 ];
+
 var currentDate = 0;
 var inspectorPositionX = 250
 var inspectorPositionY = 775
 var inspectorPositionZ = -550
 var inspectorPositionDeltaY = 75
-var inspectorTextColor = 0x339933
+var inspectorTextColor = textColor
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
 var inspectorGroup;
 var statsCube;
 var vertices = {};
 var cubeJoints = [];
-
-
 
 function init() {
     var n = navigator.userAgent;
@@ -593,19 +595,20 @@ var rayTest = function () {
         if (intersects.length > 0) {
             var currentSelectedMesh = intersects[0].object; 
             if (currentSelectedMesh != selectedMesh) {
-                if(selectedMesh && !selectedMesh.isSelected) {
-                	resetSelectedMesh()
-                } else {
-                	previousSelectedMesh = selectedMesh
-                	previousSelectedMeshMaterial = selectedMeshOriginalMaterial
+                if( currentSelectedMesh != previousSelectedMesh) {
+	            	if(selectedMesh && !selectedMesh.isSelected) {
+	                	resetSelectedMesh()
+	                }
+	                startSelectionTime = currentTime()
+	                selectedMesh = currentSelectedMesh
+	                selectedMeshOriginalMaterial = selectedMesh.material;
+	                selectedMesh.material = selectedMesh.material.clone();
+	                selectedMesh.material.color.setRGB(.5,0,0);
                 }
-                startSelectionTime = currentTime()
-                selectedMesh = currentSelectedMesh
-                selectedMeshOriginalMaterial = selectedMesh.material;
-                selectedMesh.material = selectedMesh.material.clone();
-                selectedMesh.material.color.setRGB(.5,0,0);
             } else if(!selectedMesh.isSelected && currentTime() - startSelectionTime > SELECTION_TIME) {
             	resetPreviousSelectedMesh()
+            	previousSelectedMesh = selectedMesh
+            	previousSelectedMeshMaterial = selectedMeshOriginalMaterial
             	selectedMesh.material.color.setRGB(.1,0,0);
             	updateInspectionInfo(selectedMesh)
             	selectedMesh.isSelected = true
@@ -979,9 +982,9 @@ function buildCube(position, labels, length) {
 
 function buildCubeAxes(position, length) {
     var axes = new THREE.Object3D();
-    axes.add(buildAxis(new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( length, 0, 0 ), 0x339933, false)); // +X
-    axes.add(buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, length, 0 ), 0x339933, false)); // +Y
-    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, length ), 0x339933, false)); // +Z
+    axes.add(buildAxis(new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( length, 0, 0 ), statsCubeColor, false)); // +X
+    axes.add(buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, length, 0 ), statsCubeColor, false)); // +Y
+    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, length ), statsCubeColor, false)); // +Z
     axes.translateX(position[0]);
     axes.translateY(position[1]);    
     axes.translateZ(position[2]);
@@ -990,9 +993,9 @@ function buildCubeAxes(position, length) {
 
 function buildCubeLabels(position, labels, length) {
     var texts = new THREE.Object3D();   
-    texts.add(buildAxisText(labels[0], 0x339933, [length, 0, 0], [0, 0, 0]));
-    texts.add(buildAxisText(labels[1], 0x339933, [0, length, 0], [0, 0, Math.PI/2]));
-    var labelZ = buildAxisText(labels[2], 0x339933, [0, 0, length], [0, Math.PI/2, 0]);
+    texts.add(buildAxisText(labels[0], textColor, [length, 0, 0], [0, 0, 0]));
+    texts.add(buildAxisText(labels[1], textColor, [0, length, 0], [0, 0, Math.PI/2]));
+    var labelZ = buildAxisText(labels[2], textColor, [0, 0, length], [0, Math.PI/2, 0]);
     texts.add(labelZ);
 
     labelZ.geometry.computeBoundingBox();
