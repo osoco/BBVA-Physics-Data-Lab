@@ -587,8 +587,11 @@ function currentTime() {
 	return new Date().getTime()
 }
 // Raycast Test
-var rayTest = function () {
-	if(inspectorActivated) {
+var raycastingAttemps = 0
+var raycasting = function () {
+	raycastingAttemps = (raycastingAttemps + 1) % 4 
+	if(inspectorActivated && raycastingAttemps == 0) {
+
 		var vector = new THREE.Vector3( 0, 0, 1 );
         projector.unprojectVector( vector, camera );
         raycaster.set( camera.position, vector.sub(camera.position).normalize());
@@ -614,8 +617,9 @@ var rayTest = function () {
             	updateInspectionInfo(selectedMesh)
             	selectedMesh.isSelected = true
             }
-        }        
-	}
+        }
+	} 
+	
     
 	/*
     if (filterIdMoving > -1) {
@@ -1318,7 +1322,7 @@ function initControls() {
     //controls = new THREE.LeapPinchRotateControls( camera , controller );
 
 	// Moves (translates and rotates) the camera
-	  vrControls = new THREE.VRControls(camera, true, 1000, {x:0, y:0, z: -450});
+	  vrControls = new THREE.VRControls(camera, true, 1000, {x:0, y:400, z: 250});
 
 	  vrEffect = new THREE.VREffect(renderer);
 
@@ -1410,6 +1414,7 @@ function loop() {
 		labMenu.updateAll();
 		vrEffect.render(scene, camera);
 	    requestAnimationFrame( loop );
+	    raycasting()
 	} else {
 		setTimeout(loop, 100)
 	}
