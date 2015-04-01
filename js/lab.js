@@ -201,7 +201,7 @@ function init() {
 
     // background
     var buffgeoBack = new THREE.BufferGeometry();
-    buffgeoBack.fromGeometry( new THREE.IcosahedronGeometry(3000,1));
+    buffgeoBack.fromGeometry( new THREE.IcosahedronGeometry(3000,5));
     var back = new THREE.Mesh(buffgeoBack,
                               new THREE.MeshBasicMaterial( {
                                   map: gradTexture([[0.75,0.6,0.4,0.25], ['#1B1D1E','#3D4143','#72797D', '#b0babf']]),
@@ -253,8 +253,7 @@ function init() {
 
         
         mats['box'] = new THREE.MeshBasicMaterial( { map: basicTexture(1), name:'box' } );
-        mats['filter'] = new THR
-        EE.MeshLambertMaterial( { color: 0x3D4143, transparent:true, opacity:0.6 } );            
+        mats['filter'] = new THREE.MeshLambertMaterial( { color: 0x3D4143, transparent:true, opacity:0.6 } );            
         mats['ground'] = new THREE.MeshBasicMaterial( { color:debugColor, wireframe:true, transparent:true, opacity:0, fog: false, depthTest: false, depthWrite: false});
     }
 
@@ -291,10 +290,10 @@ function initCaption() {
 	}
 }
 
-function addStaticBox(size, position, rotation, spec) {
-    var mesh;
-    if(spec) mesh = new THREE.Mesh( geos.box, mats.filter );
-    else mesh = new THREE.Mesh( geos.box, mats.box );
+function addStaticBox(size, position, rotation, spec, material) {
+	var mesh;
+	if(spec) mesh = new THREE.Mesh( geos.box, material || mats.filter );
+    else mesh = new THREE.Mesh( geos.box, material || mats.box );
     mesh.scale.set( size[0], size[1], size[2] );
     mesh.position.set( position[0], position[1], position[2] );
     mesh.rotation.set( rotation[0]*ToRad, rotation[1]*ToRad, rotation[2]*ToRad );
@@ -701,7 +700,7 @@ function enableFilter(filterId) {
 	            move: false,
 	            config: config
 	        });
-	        filter.wallMesh = addStaticBox([20, 150, 1000], filterPosition, [0,0,0], true);
+	        filter.wallMesh = addStaticBox([20, 150, 1000], filterPosition, [0,0,0], true, filter.material);
 	        scene.add(filter.wall);
 	        bodys[bodys.length] = filter.wallBody;
 	        meshs[meshs.length] = filter.wallMesh;
@@ -768,11 +767,12 @@ function removeFilterWall(filterId) {
     //meshs.splice(filter.bodyIndex, 1);
 }
 
-function createNewFilter(name, expression) {
+function createNewFilter(name, expression, color) {
     var filter = {
         id: filterIdCounter++,
         name: name,
         expression: expression,
+        material: new THREE.MeshBasicMaterial( { color: color, transparent:true, opacity:0.6} ), 
         color: filterColors[filterIdCounter % filterColors.length],
         enabled: defaultFilterEnabled,
         movingEnabled: false,
@@ -1130,29 +1130,39 @@ function enableStatsCube() {
 function setupSampleFilters() {
     var sampleFilters = [
         {
+        	color: 0x2D0051,
             name: "Men payments",
             expression: "$gender == 'M'"
         },
         {
+        	color: 0xFF00FF,
             name: "Women payments",
             expression: "$gender == 'F'"
         },
         {
-            name: "Age group 1",
-            expression: "$age_range == 1"
+        	color: 0x7821A5,
+            name: "Payment > 1000",
+            expression: "$avg_payment > 1000"
         },
         {
-            name: "Age group 2 (36-45 years)",
-            expression: "$age_range == 2"
+        	color: 0xAC64FF,
+            name: "Payment < 1000",
+            expression: "$avg_payment < 1000"
         },
         {
-            name: "Age group 3 (36-45 years)",
-            expression: "$age_range == 3"
+        	color: 0xE5007D,
+            name: "Excludes beauty",
+            expression: "$category != 'mx_beauty'"
+        },
+        {
+        	color: 0xFF89D0,
+            name: "Excludes auto",
+            expression: "$category != 'mx_auto'"
         },
     ];
     var filter;
     for (var i in sampleFilters) {
-        filter = createNewFilter(sampleFilters[i].name, sampleFilters[i].expression);
+        filter = createNewFilter(sampleFilters[i].name, sampleFilters[i].expression, sampleFilters[i].color)    
         filter.enabled = false;
         filters[filter.id] = filter;
     }    
