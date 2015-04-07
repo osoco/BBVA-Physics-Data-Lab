@@ -166,7 +166,7 @@ function init() {
     raycaster = new THREE.Raycaster();
     
     // renderer
-    renderer = new THREE.WebGLRenderer({precision: "mediump", antialias: antialias});
+    renderer = new THREE.WebGLRenderer({antialias: antialias});
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.autoClear = false;
     

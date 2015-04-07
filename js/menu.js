@@ -24,7 +24,12 @@
     var onResize = function() {
         camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
-        renderer.setSize(window.innerWidth, window.innerHeight)
+        if(isMobile) {
+        	vrEffect.setSize(window.innerWidth, window.innerHeight)
+        } else {
+        	renderer.setSize(window.innerWidth, window.innerHeight)
+        }
+        
     }
     window.addEventListener('resize', onResize, false)
  
