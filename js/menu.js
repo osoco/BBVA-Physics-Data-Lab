@@ -13,13 +13,14 @@
     var raycaster = new THREE.Raycaster()
 
     // renderer
-    var renderer = new THREE.WebGLRenderer({precision: "mediump", antialias: true})
+    var renderer = new THREE.WebGLRenderer()
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.autoClear = false
 
-    var vrControls = new THREE.VRControls(camera, false, 0);
-    var vrEffect = new THREE.VREffect(renderer);
-   
+    var isMobile = isMobilePhone()
+    var vrEffect = initEffect()
+    var vrControls = isMobile ? new THREE.DeviceOrientationControls(camera) : new THREE.VRControls(camera, false, 0);
+    
     var onResize = function() {
         camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
@@ -36,13 +37,28 @@
         loop()
     }, 150)
         
+    function initEffect() {
+    	var effect
+    	if(isMobile) {
+    		effect = new THREE.StereoEffect(renderer);
+    		effect.eyeSeparation = 10;
+    		effect.setSize( window.innerWidth , window.innerHeight);
+        } else {
+        	effect = new THREE.VREffect(renderer);
+        }
+    	return effect
+    }
+
     function loop() {
 		if(menuOpen) {
 	    	vrControls.update()
+	    	datasetMenu.update()
+	    	if(isMobile) {
+	    		onResize()	
+	    	}
 	    	vrEffect.render(scene, camera)
-	        datasetMenu.update()
 	        requestAnimationFrame( loop )
-		} else {
+	    } else {
 			setTimeout(loop, 100)
 		}
     }

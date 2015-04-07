@@ -127,18 +127,22 @@ var statsCube;
 var vertices = {};
 var cubeJoints = [];
 
-function init() {
-    var n = navigator.userAgent;
-    if (n.match(/Android/i) ||
+function isMobilePhone() {
+	var n = navigator.userAgent;
+	return  (n.match(/Android/i) ||
         n.match(/webOS/i) ||
         n.match(/iPhone/i) ||
         n.match(/iPad/i) ||
         n.match(/iPod/i) ||
         n.match(/BlackBerry/i) ||
-        n.match(/Windows Phone/i)) {
-        isMobile = true;
-        antialias = false;
-    }
+        n.match(/Windows Phone/i)) 
+}
+
+function init() {
+	if(isMobilePhone()) {
+		isMobile = true;
+		antialias = false;
+	}
 
     // camera
     var cameraFOV = 60;
@@ -170,33 +174,34 @@ function init() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        labVrEffect.setSize( window.innerWidth, window.innerHeight );
       };
       window.addEventListener('resize', onResize, false);
       
     //leap-hands
     initLeap()
-    initControls()
+    initControlsAndEffect()
    
     // lights
     if (!isMobile){
-        var ambientLight = new THREE.AmbientLight(0x555557);
-        light = new THREE.DirectionalLight(0xffffff , 1.3);
-        light.position.set( 300, 1000, 500 );
-        light.target.position.set( 0, 0, 0 );
-        light.castShadow = true;
-        light.shadowCameraNear = 500;
-        light.shadowCameraFar = 1600;
-        light.shadowCameraFov = 70;
-        light.shadowBias = 0.0001;
-        light.shadowDarkness = 0.7;
-        //light.shadowCameraVisible = true;
-        light.shadowMapWidth = light.shadowMapHeight = 1024;
+    var ambientLight = new THREE.AmbientLight(0x555557);
+    light = new THREE.DirectionalLight(0xffffff , 1.3);
+    light.position.set( 300, 1000, 500 );
+    light.target.position.set( 0, 0, 0 );
+    light.castShadow = true;
+    light.shadowCameraNear = 500;
+    light.shadowCameraFar = 1600;
+    light.shadowCameraFov = 70;
+    light.shadowBias = 0.0001;
+    light.shadowDarkness = 0.7;
+    //light.shadowCameraVisible = true;
+    light.shadowMapWidth = light.shadowMapHeight = 1024;
 
-        scene.add(ambientLight);
-        scene.add( light );
-        
-        renderer.shadowMapEnabled = true;
-        renderer.shadowMapType = THREE.PCFShadowMap;
+    scene.add(ambientLight);
+    scene.add( light );
+    
+    renderer.shadowMapEnabled = true;
+    renderer.shadowMapType = THREE.PCFShadowMap;
     }
 
     // background
@@ -256,7 +261,7 @@ function init() {
         mats['filter'] = new THREE.MeshLambertMaterial( { color: 0x3D4143, transparent:true, opacity:0.6 } );            
         mats['ground'] = new THREE.MeshBasicMaterial( { color:debugColor, wireframe:true, transparent:true, opacity:0, fog: false, depthTest: false, depthWrite: false});
     }
-
+  
     container = document.getElementById("lab");
     container.appendChild( renderer.domElement );
 
@@ -1327,21 +1332,42 @@ function initLeap() {
 	  */
 }
 
+
+function initEffect() {
+	var effect
+	if(isMobile) {
+		effect = new THREE.StereoEffect(renderer);
+		effect.eyeSeparation = 10;
+		effect.setSize( window.innerWidth , window.innerHeight);
+    } else {
+    	effect = new THREE.VREffect(renderer);
+    }
+	return effect
+}
+
 function initControls() {
-    //Controls
-    //controls = new THREE.LeapPinchRotateControls( camera , controller );
-
-	// Moves (translates and rotates) the camera
-	  vrControls = new THREE.VRControls(camera, true, 1000, {x:0, y:400, z: 250});
-
-	  vrEffect = new THREE.VREffect(renderer);
-
+	if(isMobile) {
+		var controls = new THREE.DeviceOrientationControls(camera) 
+		camera.position.y = 50
+		camera.position.z = 50
+		
+		return controls
+	} else {
+		return new THREE.VRControls(camera, true, 1000, {x:0, y:400, z: 250});
+	}
+}
+function initControlsAndEffect() {
+      vrControls = initControls()
+	    
+      
+      labVrEffect = initEffect()
+	  
 	  onkey = function(event) {
 	    if (event.key === 'z') {
 	      vrControls.zeroSensor();
 	    }
 	    if (event.key === 'f') {
-	      return vrEffect.setFullScreen(true);
+	      return labVrEffect.setFullScreen(true);
 	    }
 	  };
 
@@ -1422,9 +1448,10 @@ function loop() {
 	if(labOpen) {
 		vrControls.update();
 		labMenu.updateAll();
-		vrEffect.render(scene, camera);
-	    requestAnimationFrame( loop );
+		labVrEffect.render(scene, camera);
+		requestAnimationFrame( loop );
 	    raycasting()
+	    
 	} else {
 		setTimeout(loop, 100)
 	}

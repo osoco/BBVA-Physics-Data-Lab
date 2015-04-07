@@ -157,10 +157,7 @@ String.prototype.capitalize = function() {
 		}
 
 		function updateViewCenterPosition() {
-			var vector = new THREE.Vector3( 0.0, 0.0, 1 );
-			projector.unprojectVector( vector, camera );
-			var direction = vector.sub(camera.position).normalize()
-			drawer.updateViewCenterPosition(direction)
+			drawer.updateViewCenterPosition()
 		}
 		
 		function translateToCurrentMenu(withoutTransition) {
@@ -183,13 +180,13 @@ String.prototype.capitalize = function() {
 		var PRESELECTED_COLOR = 0xFFCE00 // 0x00ffff
 		var SELECTED_COLOR = PRESELECTED_COLOR //0xff0000
 
-		var VIEW_CENTER_RADIOUS = 0.25
-		var VIEW_CENTER_TUBE_RADIOUS = 0.1
+		var VIEW_CENTER_RADIOUS = 1
+		var VIEW_CENTER_TUBE_RADIOUS = 0.2
 		var VIEW_RADIAL_SEGMENTS = 8*10
 		var VIEW_TUBULAR_SEGMENTS = 6*15
 		var VIEW_ARC = Math.PI * 2;
 		var VIEW_CENTER_COLOR = 0x888888
-		var VIEW_CENTER_DISTANCE_FACTOR = 5
+		var VIEW_CENTER_DISTANCE_FACTOR = 25
 
 		var MENU_RADIOUS = 30
 		var MENU_ITEM_ROTATION_DELTA = Math.PI / 8
@@ -206,7 +203,7 @@ String.prototype.capitalize = function() {
 		var BACKGROUND_IMAGE = 'img/menu/background.jpg'
 		var drawAsLinear = options.drawAsLinear
 	    var drawBackground = options.drawBackground
-	    var menuItemSize = options.menuItemSize || DEFAULT_MENU_ITEM_SIZE  
+	    var menuItemSize = options.menuItemSize || DEFAULT_MENU_ITEM_SIZE
 	    
 	    var MENU_LINEAR_DISTANCE = menuItemSize * 1.2
 	    
@@ -392,13 +389,18 @@ String.prototype.capitalize = function() {
 			}
 		}
 		
-		this.updateViewCenterPosition = function(direction) {
-			viewCenter.position.x = camera.position.x + direction.x * VIEW_CENTER_DISTANCE_FACTOR  
-			viewCenter.position.y = camera.position.y + direction.y * VIEW_CENTER_DISTANCE_FACTOR
-			viewCenter.position.z = camera.position.z + direction.z * VIEW_CENTER_DISTANCE_FACTOR
-			viewCenter.rotation.x = camera.rotation.x
-			viewCenter.rotation.y = camera.rotation.y
-			viewCenter.rotation.z = camera.rotation.z
+		this.updateViewCenterPosition = function() {
+			var vec = new THREE.Vector3(0, 0, -VIEW_CENTER_DISTANCE_FACTOR );
+			vec.applyQuaternion( camera.quaternion );
+
+			viewCenter.position.copy( vec );
+			
+			viewCenter.position.x += camera.position.x  
+			viewCenter.position.y += camera.position.y
+			viewCenter.position.z += camera.position.z
+			
+			viewCenter.rotation.copy(camera.rotation)
+			viewCenter.quaternion.copy(camera.quaternion)
 		}
 	}
 
