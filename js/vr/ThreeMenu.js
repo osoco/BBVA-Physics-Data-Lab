@@ -24,6 +24,7 @@ String.prototype.capitalize = function() {
      * Options:
      * drawAsLinear -> draw linear menuSelect
      * drawBackground -> draw background
+     * rotation -> menu rotation
      */
 	function Menu(scene, camera, projector, raycaster, options) {
 		options = options || {}
@@ -202,6 +203,7 @@ String.prototype.capitalize = function() {
 		
 		var BACKGROUND_IMAGE = 'img/menu/background.jpg'
 		var drawAsLinear = options.drawAsLinear
+		var directionRotation = drawAsLinear && options.rotation || 0
 	    var drawBackground = options.drawBackground
 	    var menuItemSize = options.menuItemSize || DEFAULT_MENU_ITEM_SIZE
 	    
@@ -318,8 +320,9 @@ String.prototype.capitalize = function() {
 			var menuCenter = menu.center
 			mesh.position.y = menuCenter.y
 			if(drawAsLinear) {
-				mesh.position.x = menuCenter.x + MENU_LINEAR_DISTANCE * menuItemIndex
-				mesh.position.z = menuCenter.z
+				mesh.position.x = menuCenter.x + (MENU_LINEAR_DISTANCE * menuItemIndex * Math.cos(directionRotation))
+				mesh.position.z = menuCenter.z + MENU_LINEAR_DISTANCE * menuItemIndex * Math.sin(directionRotation)
+				mesh.rotation.y = Math.PI*2 - directionRotation
 			} else {
 				mesh.position.x = menuCenter.x + MENU_RADIOUS*Math.sin(rotation)
 				mesh.position.z = menuCenter.z + MENU_RADIOUS*Math.cos(rotation)

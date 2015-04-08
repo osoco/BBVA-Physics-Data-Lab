@@ -12,6 +12,11 @@ var filterWallBody, filterWall1, filterWall2, filterWall3, filterWall4;
 var isMobile = false;
 var antialias = true;
 
+if(isMobilePhone()) {
+	isMobile = true;
+	antialias = false;
+}
+
 var geos = {};
 var mats = {};
 
@@ -80,12 +85,12 @@ var labelTextColor = 0xAAAAAA
 var statsCubeColor = 0xA5A5A5
 
 var captionPositionX = 1050
-var captionPositionY = 800
-var captionPositionZ = -550
+var captionPositionY = isMobile ? 600 : 800
+var captionPositionZ = isMobile ? 550 : -550
 var captionTextMargin = 50
 var captionDeltaY = 50
-var rotationAngle = Math.PI / 3
-var captionRotation = [0, 2*Math.PI - rotationAngle ,0]
+var captionRotationAngle = isMobile ? (Math.PI / 2) : (Math.PI / 3)
+var captionRotation = [0, 2*Math.PI - captionRotationAngle ,0]
 var captionTextColor = textColor
 var captionTextHeight = 20
 
@@ -116,8 +121,8 @@ var daysOfMonth = [
 ];
 
 var currentDate = 0;
-var inspectorPositionX = 250
-var inspectorPositionY = 775
+var inspectorPositionX = isMobile ? -250 : 250
+var inspectorPositionY = isMobile ? 600 : 775
 var inspectorPositionZ = -550
 var inspectorPositionDeltaY = 50
 var inspectorTextColor = textColor
@@ -127,30 +132,15 @@ var statsCube;
 var vertices = {};
 var cubeJoints = [];
 
-function isMobilePhone() {
-	var n = navigator.userAgent;
-	return  (n.match(/Android/i) ||
-        n.match(/webOS/i) ||
-        n.match(/iPhone/i) ||
-        n.match(/iPad/i) ||
-        n.match(/iPod/i) ||
-        n.match(/BlackBerry/i) ||
-        n.match(/Windows Phone/i)) 
-}
-
 function init() {
-	if(isMobilePhone()) {
-		isMobile = true;
-		antialias = false;
-	}
-
     // camera
     var cameraFOV = 60;
     var cameraAspectRatio = window.innerWidth / window.innerHeight;
-    var cameraNearPlane = 0.1;
+    var cameraNearPlane = 1;
     var cameraFarPlane = 15000;
     camera = new THREE.PerspectiveCamera(cameraFOV, cameraAspectRatio, cameraNearPlane, cameraFarPlane);
-    initCamera(0, 70, 2000);
+    camera.position.z = 750;
+    camera.position.y = 650;
     camera.lookAt( new THREE.Vector3( 0, 0, 0 ) )        
 
     scene = new THREE.Scene();
@@ -264,9 +254,9 @@ function initCaption() {
 		categorySphere.position.z = captionPositionZ
 		
 		var texPosition = [
-            (captionPositionX) + captionTextMargin *Math.cos(rotationAngle), 
+            (captionPositionX) + captionTextMargin *Math.cos(captionRotationAngle), 
             positionY - captionTextHeight/2, 
-            captionPositionZ + captionTextMargin *Math.sin(rotationAngle)
+            captionPositionZ + captionTextMargin *Math.sin(captionRotationAngle)
         ]
 		var text = buildAxisText(categoryAsString, captionTextColor, texPosition, captionRotation)
 		scene.add(text)
@@ -1327,11 +1317,6 @@ function initEffect() {
 function initControls() {
 	if(isMobile) {
 		var controls = new THREE.DeviceOrientationControls(camera) 
-		setTimeout(1000, function() {
-			camera.position.y = 50
-			camera.position.z = 25
-		})
-		
 		return controls
 	} else {
 		return new THREE.VRControls(camera, true, 1000, {x:0, y:400, z: 250});
@@ -1363,7 +1348,8 @@ function initMenu() {
     labMenu = new THREE.Menu(scene, camera, projector, raycaster, {
     	drawAsLinear: true, 
     	drawBackground:false, 
-    	menuItemSize : 100
+    	menuItemSize : 150, 
+    	rotation: isMobile ? 3*Math.PI/2 : 0
     })
     
     var statusMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(0))
@@ -1414,7 +1400,7 @@ function initMenu() {
 
 function buildPositionForMenuByRowIndex(rowIndex) {
 	var yPosition = menuDefaultY - rowIndex* menuDefaultDeltaY
-	var zPos = (isMobile ? -1 : 1 ) * menuDefaultZ
+	var zPos = (isMobile ? -1.75 : 1 ) * menuDefaultZ
 	return {x: menuDefaultX, y: yPosition, z:zPos}
 }
 
@@ -1437,4 +1423,15 @@ function loop() {
 	} else {
 		setTimeout(loop, 100)
 	}
+}
+
+function isMobilePhone() {
+	var n = navigator.userAgent;
+	return  (n.match(/Android/i) ||
+        n.match(/webOS/i) ||
+        n.match(/iPhone/i) ||
+        n.match(/iPad/i) ||
+        n.match(/iPod/i) ||
+        n.match(/BlackBerry/i) ||
+        n.match(/Windows Phone/i)) 
 }
