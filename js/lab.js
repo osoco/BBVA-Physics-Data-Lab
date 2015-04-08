@@ -85,24 +85,24 @@ var labelTextColor = 0xAAAAAA
 var statsCubeColor = 0xA5A5A5
 
 var captionPositionX = 1050
-var captionPositionY = isMobile ? 600 : 800
+var captionPositionY = isMobile ? 600 : 900
 var captionPositionZ = isMobile ? 550 : -550
 var captionTextMargin = 50
-var captionDeltaY = 50
+var captionDeltaY = 65
 var captionRotationAngle = isMobile ? (Math.PI / 2) : (Math.PI / 3)
 var captionRotation = [0, 2*Math.PI - captionRotationAngle ,0]
 var captionTextColor = textColor
-var captionTextHeight = 20
+var captionTextHeight = 50
 
 var filterColors = [ '#633', '#363', '#336' ];
 var filters = {};
 var defaultFilterEnabled = true;
 var defaultFilterPositionX = -1000;
 var filterPositionDeltaX = [0, 200, 400,  1550, 1750, 1950];
-var menuDefaultX = -950
+var menuDefaultX = isMobile ? -950 : -1400
 var menuDefaultZ = -550
-var menuDefaultY = 600
-var menuDefaultDeltaY = 200
+var menuDefaultY = isMobile ? 600 : 800
+var menuDefaultDeltaY = isMobile ? 200 : 250
 var filterIdMoving = -1;
 var filterIdCounter = 0;
 var paymentsPerSphere = 250;
@@ -121,10 +121,10 @@ var daysOfMonth = [
 ];
 
 var currentDate = 0;
-var inspectorPositionX = isMobile ? -250 : 250
+var inspectorPositionX = isMobile ? -250 : 100
 var inspectorPositionY = isMobile ? 600 : 775
 var inspectorPositionZ = -550
-var inspectorPositionDeltaY = 50
+var inspectorPositionDeltaY = 65
 var inspectorTextColor = textColor
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
 var inspectorGroup;
@@ -1348,7 +1348,7 @@ function initMenu() {
     labMenu = new THREE.Menu(scene, camera, projector, raycaster, {
     	drawAsLinear: true, 
     	drawBackground:false, 
-    	menuItemSize : 150, 
+    	menuItemSize : isMobile ? 150 : 200, 
     	rotation: isMobile ? 3*Math.PI/2 : 0
     })
     
