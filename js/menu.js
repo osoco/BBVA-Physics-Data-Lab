@@ -46,7 +46,7 @@
     	var effect
     	if(isMobile) {
     		effect = new THREE.StereoEffect(renderer);
-    		effect.eyeSeparation = 10;
+    		effect.separation = 0;
     		effect.setSize( window.innerWidth , window.innerHeight);
         } else {
         	effect = new THREE.VREffect(renderer);

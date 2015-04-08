@@ -183,7 +183,6 @@ function init() {
     initControlsAndEffect()
    
     // lights
-    if (!isMobile){
     var ambientLight = new THREE.AmbientLight(0x555557);
     light = new THREE.DirectionalLight(0xffffff , 1.3);
     light.position.set( 300, 1000, 500 );
@@ -202,8 +201,7 @@ function init() {
     
     renderer.shadowMapEnabled = true;
     renderer.shadowMapType = THREE.PCFShadowMap;
-    }
-
+    
     // background
     var buffgeoBack = new THREE.BufferGeometry();
     buffgeoBack.fromGeometry( new THREE.IcosahedronGeometry(3000,5));
@@ -225,43 +223,24 @@ function init() {
     geos['cyl'].fromGeometry( new THREE.CylinderGeometry(1, 1, 1, 20));
     
     // materials
-    if(!isMobile){
-        mats['sph.mx_barsandrestaurants'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_barsandrestaurants'), name:'sph.mx_barsandrestaurants' } );
-        mats['sph.mx_services'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_services'), name:'sph.mx_services' } );
-        mats['sph.mx_food'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_food'), name:'sph.mx_food' } );            
-	mats['sph.mx_office'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_office'), name:'sph.mx_office' } );            
-        mats['sph.mx_car'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_car'), name:'sph.mx_car' } );            
-	mats['sph.mx_auto'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_auto'), name:'sph.mx_auto' } );            
-	mats['sph.mx_travel'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_travel'), name:'sph.mx_travel' } );            
-	mats['sph.mx_sport'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_sport'), name:'sph.mx_sport' } );            
-	mats['sph.mx_beauty'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_beauty'), name:'sph.mx_beauty' } );            
-	mats['sph.mx_health'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_health'), name:'sph.mx_health' } );            
-	mats['sph.mx_fashion'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_fashion'), name:'sph.mx_fashion' } );            
-	mats['sph.mx_leisure'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_leisure'), name:'sph.mx_leisure' } );            
+    
+    mats['sph.mx_barsandrestaurants'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_barsandrestaurants'), name:'sph.mx_barsandrestaurants' } );
+    mats['sph.mx_services'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_services'), name:'sph.mx_services' } );
+    mats['sph.mx_food'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_food'), name:'sph.mx_food' } );            
+    mats['sph.mx_office'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_office'), name:'sph.mx_office' } );            
+    mats['sph.mx_car'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_car'), name:'sph.mx_car' } );            
+    mats['sph.mx_auto'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_auto'), name:'sph.mx_auto' } );            
+    mats['sph.mx_travel'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_travel'), name:'sph.mx_travel' } );            
+    mats['sph.mx_sport'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_sport'), name:'sph.mx_sport' } );            
+    mats['sph.mx_beauty'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_beauty'), name:'sph.mx_beauty' } );            
+    mats['sph.mx_health'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_health'), name:'sph.mx_health' } );            
+    mats['sph.mx_fashion'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_fashion'), name:'sph.mx_fashion' } );            
+    mats['sph.mx_leisure'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_leisure'), name:'sph.mx_leisure' } );            
 
-        mats['box'] = new THREE.MeshPhongMaterial( { map: basicTexture(1), name:'box' } );
-        mats['filter'] = new THREE.MeshLambertMaterial( { color: 0x3D4143, transparent: true, opacity: 0.8 } );            
-        mats['ground'] = new THREE.MeshBasicMaterial( { color:debugColor, wireframe:true, transparent:true, opacity:0, fog: false, depthTest: false, depthWrite: false});
-    } else {
-        mats['sph.mx_barsandrestaurants'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_barsandrestaurants'), name:'sph.mx_barsandrestaurants' } );
-        mats['sph.mx_services'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_services'), name:'sph.mx_services' } );
-        mats['sph.mx_food'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_food'), name:'sph.mx_food' } );            
-	mats['sph.mx_office'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_office'), name:'sph.mx_office' } );    
-        mats['sph.mx_car'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_car'), name:'sph.mx_car' } );            
-	mats['sph.mx_auto'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_auto'), name:'sph.mx_auto' } );            
-	mats['sph.mx_travel'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_travel'), name:'sph.mx_travel' } );            
-        mats['sph.mx_sport'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_sport'), name:'sph.mx_sport' } );            
-	mats['sph.mx_beauty'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_beauty'), name:'sph.mx_beauty' } );            
-	mats['sph.mx_health'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_health'), name:'sph.mx_health' } );
-	mats['sph.mx_fashion'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_fashion'), name:'sph.mx_fashion' } );
-	mats['sph.mx_leisure'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_leisure'), name:'sph.mx_leisure' } );                    
-
-        
-        mats['box'] = new THREE.MeshBasicMaterial( { map: basicTexture(1), name:'box' } );
-        mats['filter'] = new THREE.MeshLambertMaterial( { color: 0x3D4143, transparent:true, opacity:0.6 } );            
-        mats['ground'] = new THREE.MeshBasicMaterial( { color:debugColor, wireframe:true, transparent:true, opacity:0, fog: false, depthTest: false, depthWrite: false});
-    }
-  
+    mats['box'] = new THREE.MeshPhongMaterial( { map: basicTexture(1), name:'box' } );
+    mats['filter'] = new THREE.MeshLambertMaterial( { color: 0x3D4143, transparent: true, opacity: 0.8 } );            
+    mats['ground'] = new THREE.MeshBasicMaterial( { color:debugColor, wireframe:true, transparent:true, opacity:0, fog: false, depthTest: false, depthWrite: false});
+      
     container = document.getElementById("lab");
     container.appendChild( renderer.domElement );
 
@@ -1337,7 +1316,7 @@ function initEffect() {
 	var effect
 	if(isMobile) {
 		effect = new THREE.StereoEffect(renderer);
-		effect.eyeSeparation = 10;
+		effect.separation = 0;
 		effect.setSize( window.innerWidth , window.innerHeight);
     } else {
     	effect = new THREE.VREffect(renderer);
@@ -1348,8 +1327,10 @@ function initEffect() {
 function initControls() {
 	if(isMobile) {
 		var controls = new THREE.DeviceOrientationControls(camera) 
-		camera.position.y = 50
-		camera.position.z = 50
+		setTimeout(1000, function() {
+			camera.position.y = 50
+			camera.position.z = 25
+		})
 		
 		return controls
 	} else {
@@ -1433,7 +1414,8 @@ function initMenu() {
 
 function buildPositionForMenuByRowIndex(rowIndex) {
 	var yPosition = menuDefaultY - rowIndex* menuDefaultDeltaY
-	return {x: menuDefaultX, y: yPosition,  z:menuDefaultZ}
+	var zPos = (isMobile ? -1 : 1 ) * menuDefaultZ
+	return {x: menuDefaultX, y: yPosition, z:zPos}
 }
 
 function buildImageNameByFilterId(filterId) {
