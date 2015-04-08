@@ -16,6 +16,20 @@ String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
+THREE.putElementInFrontOfCamera = function (camera, element, place) {
+	var vec = new THREE.Vector3(place.x, place.y, place.z);
+	vec.applyQuaternion( camera.quaternion );
+
+	element.position.copy( vec );
+	
+	element.position.x += camera.position.x  
+	element.position.y += camera.position.y
+	element.position.z += camera.position.z
+	
+	element.rotation.copy(camera.rotation)
+	element.quaternion.copy(camera.quaternion)
+}
+
 ;(function() {
 	function getCurrentTime() {
 		return new Date().getTime()
@@ -393,17 +407,7 @@ String.prototype.capitalize = function() {
 		}
 		
 		this.updateViewCenterPosition = function() {
-			var vec = new THREE.Vector3(0, 0, -VIEW_CENTER_DISTANCE_FACTOR );
-			vec.applyQuaternion( camera.quaternion );
-
-			viewCenter.position.copy( vec );
-			
-			viewCenter.position.x += camera.position.x  
-			viewCenter.position.y += camera.position.y
-			viewCenter.position.z += camera.position.z
-			
-			viewCenter.rotation.copy(camera.rotation)
-			viewCenter.quaternion.copy(camera.quaternion)
+			THREE.putElementInFrontOfCamera(camera, viewCenter, {x:0, y:0, z:-VIEW_CENTER_DISTANCE_FACTOR});
 		}
 	}
 

@@ -125,12 +125,13 @@ var inspectorPositionX = isMobile ? -250 : 100
 var inspectorPositionY = isMobile ? 600 : 775
 var inspectorPositionZ = -550
 var inspectorPositionDeltaY = 65
-var inspectorTextColor = 0xFF8500
+var inspectorTextColor = 0xFFB702
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
 var inspectorGroup;
 var statsCube;
 var vertices = {};
 var cubeJoints = [];
+var osocoLogo
 
 function init() {
     // camera
@@ -1161,6 +1162,7 @@ function setupSampleFilters() {
 }
 
 init();
+initLogo();
 setupSampleFilters();
 initMenu();
 initCaption();
@@ -1434,10 +1436,23 @@ function buildCheckedImageNameByFilterId(filterId) {
 	return 'img/menu/filters/' + filterId + '_checked.png'
 }
 
+function initLogo() {
+	var texture = new THREE.ImageUtils.loadTexture( 'img/osocoLogo.png' )
+	var imgGeometry = new THREE.PlaneBufferGeometry(3,1)
+	var imgMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide, transparent: false, color: 0xFFFFFF});
+	var mesh = new THREE.Mesh(imgGeometry, imgMaterial)
+	mesh.position.x = 10000;
+	scene.add(mesh)
+	osocoLogo = mesh
+}
+
 function loop() {
 	if(labOpen) {
 		vrControls.update();
 		labMenu.updateAll();
+		if(osocoLogo) {
+			THREE.putElementInFrontOfCamera(camera, osocoLogo, {x:10, y:10, z:-25})
+		}
 		labVrEffect.render(scene, camera);
 		requestAnimationFrame( loop );
 	    raycasting()
