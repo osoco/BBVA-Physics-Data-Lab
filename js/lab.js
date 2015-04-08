@@ -97,11 +97,11 @@ var captionTextHeight = 50
 var filterColors = [ '#633', '#363', '#336' ];
 var filters = {};
 var defaultFilterEnabled = true;
-var defaultFilterPositionX = -1000;
-var filterPositionDeltaX = [0, 200, 400,  1550, 1750, 1950];
-var menuDefaultX = isMobile ? -950 : -1400
-var menuDefaultZ = -550
-var menuDefaultY = isMobile ? 600 : 800
+var defaultFilterPositionX = -1200;
+var filterPositionDeltaX = [0, 2200, 200, 2400, 400,  2000];
+var menuDefaultX = isMobile ? -950 : -950
+var menuDefaultZ = isMobile ? -800 : 400
+var menuDefaultY = isMobile ? 600 : 1500
 var menuDefaultDeltaY = isMobile ? 200 : 250
 var filterIdMoving = -1;
 var filterIdCounter = 0;
@@ -125,7 +125,7 @@ var inspectorPositionX = isMobile ? -250 : 100
 var inspectorPositionY = isMobile ? 600 : 775
 var inspectorPositionZ = -550
 var inspectorPositionDeltaY = 65
-var inspectorTextColor = textColor
+var inspectorTextColor = 0xFF8500
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
 var inspectorGroup;
 var statsCube;
@@ -457,8 +457,8 @@ function addGroundToWorld() {
     // add ground    
     config[3] = walls_mask;
     config[4] = all_mask & ~filtered_mask;
-    var ground = new OIMO.Body({size:[2000, 100, 1000], pos:[0,-50,0], world:world, config: config});
-    groundMesh = addGround([2000, 1, 1000], [0,0,0], [0,0,0]);
+    var ground = new OIMO.Body({size:[2400, 100, 1000], pos:[0,-50,0], world:world, config: config});
+    groundMesh = addGround([2400, 1, 1000], [0,0,0], [0,0,0]);
     groundContents.add(groundMesh);    
 }
 
@@ -929,7 +929,7 @@ function buildInspectorInfoMetadataLabels(metadata) {
     		'date': {name: 'Date', formatterFunction:dateAsString},
     		'category': {name: 'Category', formatterFunction: cagetoryAsString},
     		'payments': {name: 'Number of payments', formatterFunction:null},
-    		'avg': {name: 'Average payment', formatterFunction:avgAsString},
+    		'avg': {name: 'Avg. payment', formatterFunction:avgAsString},
     		'gender': {name: 'Gender', formatterFunction: genderAsString},
     		'age': {name: 'Age', formatterFunction: ageAsString}
     	}
@@ -971,12 +971,30 @@ function buildCubeAxes(position, length) {
 }
 
 function buildCubeLabels(position, labels, length) {
-    var texts = new THREE.Object3D();   
+    var texts = new THREE.Object3D();  
+    var step = 1000 / 3; 
+    
     texts.add(buildAxisText(labels[0], textColor, [length, 0, 0], [0, 0, 0]));
+    texts.add(buildAxisText("Male", textColor, [step, 0, 0], [0, 0, Math.PI/2]))
+    texts.add(buildAxisText("Female", textColor, [step * 2 , 0, 0], [0, 0, Math.PI/2]))
+    
+    
     texts.add(buildAxisText(labels[1], textColor, [0, length, 0], [0, 0, Math.PI/2]));
+    for(var i = 0; i <= 6 ; i ++ ) {
+    	texts.add(buildAxisText(ageAsString(i), textColor, [0, 100 + (1000 / 8) * i , 0], [0, 0, 0]))	
+    }
+    
     var labelZ = buildAxisText(labels[2], textColor, [0, 0, length], [0, Math.PI/2, 0]);
     texts.add(labelZ);
-
+    
+    var maxPayment = getMaxAvgPaymentNotFiltered()
+    var paymentStep = Math.round((maxPayment / 5) / 100) * 100
+    var step = 200*(paymentStep*5 / maxPayment)
+    
+    for(var i = 1; i <= 5; i++) {
+    	texts.add(buildAxisText(paymentStep*i + " $", textColor, [0, 0, step*i], [0 , 0 , Math.PI/2]));
+    }
+    
     labelZ.geometry.computeBoundingBox();
     labelZBoundingBox = labelZ.geometry.boundingBox;
     var labelZWidth = (labelZBoundingBox.max.x - labelZBoundingBox.min.x);
@@ -1349,7 +1367,7 @@ function initMenu() {
     	drawAsLinear: true, 
     	drawBackground:false, 
     	menuItemSize : isMobile ? 150 : 200, 
-    	rotation: isMobile ? 3*Math.PI/2 : 0
+    	rotation: isMobile ? 3*Math.PI/2 :  3*Math.PI/2
     })
     
     var statusMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(0))
@@ -1371,22 +1389,26 @@ function initMenu() {
     
     labMenu.addMenuSelect(statusMenuSelect)
     
-    var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(1))
+    var filtersOrder = isMobile ? [[0,1,2,3,4,5]] : [[0,1], [2,3], [4,5]] 
     
-    for(var filterId in filters) {
-    	var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), 
-    				buildCheckedImageNameByFilterId(filterId), null, (function() {
-    		var filterIdCopy = filterId
-    		return function() {
-    			toggleFilter(filterIdCopy)
-    		}
-    	})()) 
-        filtersMenuSelect.addMenuItem(filterMenuItem)    
+    for(var filtersIndex = 0; filtersIndex < filtersOrder.length; filtersIndex ++) {
+    	var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(filtersIndex + 1 ))
+    	
+    	for(var filterIdIndex in filtersOrder[filtersIndex]) {
+    		var filterId = filtersOrder[filtersIndex][filterIdIndex]
+    		var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), 
+	    				buildCheckedImageNameByFilterId(filterId), null, (function() {
+	    		var filterIdCopy = filterId
+	    		return function() {
+	    			toggleFilter(filterIdCopy)
+	    		}
+	    	})()) 
+	        filtersMenuSelect.addMenuItem(filterMenuItem)
+	    }
+    	labMenu.addMenuSelect(filtersMenuSelect)
     }
     
-    labMenu.addMenuSelect(filtersMenuSelect)
-    
-    var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(2))
+    var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(4))
     var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', 'img/menu/statsCube_checked.png', null, function() {
     	toggleStatsCubeInfo()
     })
@@ -1400,7 +1422,7 @@ function initMenu() {
 
 function buildPositionForMenuByRowIndex(rowIndex) {
 	var yPosition = menuDefaultY - rowIndex* menuDefaultDeltaY
-	var zPos = (isMobile ? -1.75 : 1 ) * menuDefaultZ
+	var zPos = menuDefaultZ
 	return {x: menuDefaultX, y: yPosition, z:zPos}
 }
 
