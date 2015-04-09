@@ -132,7 +132,8 @@ var inspectorGroup;
 var statsCube;
 var vertices = {};
 var cubeJoints = [];
-var osocoLogo
+var osocoLogoText1
+var osocoLogoText2
 
 function init() {
     // camera
@@ -945,11 +946,11 @@ function buildInspectorInfoMetadataLabels(metadata) {
 	var texts = new THREE.Object3D();   
     var fields = {
     		'date': {name: 'Date', formatterFunction:dateAsString},
+    		'gender': {name: 'Gender', formatterFunction: genderAsString},
+    		'age': {name: 'Age', formatterFunction: ageAsString},
     		'category': {name: 'Category', formatterFunction: cagetoryAsString},
     		'payments': {name: 'Number of payments', formatterFunction:null},
     		'avg': {name: 'Avg. payment', formatterFunction:avgAsString},
-    		'gender': {name: 'Gender', formatterFunction: genderAsString},
-    		'age': {name: 'Age', formatterFunction: ageAsString}
     	}
     var fieldIndex = 0
     for(fieldName in fields) {
@@ -1455,13 +1456,36 @@ function buildCheckedImageNameByFilterId(filterId) {
 }
 
 function initLogo() {
-	var texture = new THREE.ImageUtils.loadTexture( 'img/osocoLogo.png' )
-	var imgGeometry = new THREE.PlaneBufferGeometry(3,2)
-	var imgMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide, transparent: false, color: 0xFFFFFF});
-	var mesh = new THREE.Mesh(imgGeometry, imgMaterial)
-	mesh.position.x = 10000;
-	scene.add(mesh)
-	osocoLogo = mesh
+	
+	var osocoText1 = buildAxisText("OSOCO", 0xFF6600, [0,0,0], [0,0,0], 0.75)
+	var osocoText2 = buildAxisText("powered  by", 0xFF6600, [0,0,0], [0,0,0], 0.5)
+	scene.add(osocoText1)
+	scene.add(osocoText2)
+	osocoLogoText1 = osocoText1
+	osocoLogoText2 = osocoText2
+}
+
+function buildAxisText(text, colorHex, position, rotation, textHeight) {
+    var textMaterial = new THREE.MeshBasicMaterial({ color: colorHex, overdraw: 0.5 });
+    textHeight = textHeight || captionTextHeight
+    var text3d = new THREE.TextGeometry(text, {
+	size: textHeight,
+	height: textHeight * 0.1,
+	curveSegments: 2,
+	font: "helvetiker"
+    });
+        
+    var textMesh = new THREE.Mesh(text3d, textMaterial);
+        
+    textMesh.position.x = position[0];
+    textMesh.position.y = position[1];
+    textMesh.position.z = position[2];
+    
+    textMesh.rotation.x = rotation[0];
+    textMesh.rotation.y = rotation[1];
+    textMesh.rotation.z = rotation[2];    
+    
+    return textMesh;
 }
 
 var threePlace = {x:-92, y:-760, z:475}
@@ -1469,8 +1493,9 @@ function loop() {
 	if(labOpen) {
 		vrControls.update();
 		labMenu.updateAll();
-		if(osocoLogo) {
-			THREE.putElementInFrontOfCamera(camera, osocoLogo, {x:10, y:-10, z:-25})
+		if(osocoLogoText1 && osocoLogoText2) {
+			THREE.putElementInFrontOfCamera(camera, osocoLogoText1, {x:10, y:-10, z:-25})
+			THREE.putElementInFrontOfCamera(camera, osocoLogoText2, {x:10, y:-9, z:-25})
 		}
 		if(inspectorGroup) {
 			THREE.putElementInFrontOfCamera(camera, inspectorGroup, threePlace)
