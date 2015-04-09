@@ -126,7 +126,7 @@ var inspectorPositionY = isMobile ? 600 : 775
 var inspectorPositionZ = -550
 var inspectorPositionDeltaY = 3
 var inspectorTextHeight = 2
-var inspectorTextColor = 0xFF6600
+var inspectorTextColor = 0xFFFFFF
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
 var inspectorGroup;
 var statsCube;
@@ -1464,7 +1464,7 @@ function initLogo() {
 	osocoLogo = mesh
 }
 
-var threePlace = {x:-95, y:-760, z:500}
+var threePlace = {x:-92, y:-760, z:475}
 function loop() {
 	if(labOpen) {
 		vrControls.update();
