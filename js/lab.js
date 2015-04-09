@@ -124,8 +124,9 @@ var currentDate = 0;
 var inspectorPositionX = isMobile ? -250 : 100
 var inspectorPositionY = isMobile ? 600 : 775
 var inspectorPositionZ = -550
-var inspectorPositionDeltaY = 65
-var inspectorTextColor = 0xFFB702
+var inspectorPositionDeltaY = 3
+var inspectorTextHeight = 2
+var inspectorTextColor = 0xFF6600
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
 var inspectorGroup;
 var statsCube;
@@ -909,10 +910,26 @@ function removeInspectorInfo() {
 	inspectorGroup = null
 }
 
+
+var inspectorBoxHeight = 40
+var inspectorBoxboxWidth = 20
+var inspectorBoxdeltaX = 18
+var inspectorBoxdeltaY = 6.7
 function buildInspectorInfo(metadata) {
 	removeInspectorInfo()
 	inspectorGroup = new THREE.Group();
 	inspectorGroup.add(buildInspectorInfoMetadataLabels(metadata))
+	
+	
+	var inspectorMat = new THREE.MeshBasicMaterial( { color: 0x000000, transparent:true, opacity:0.7} )
+	var inspectorGeometry = new THREE.BoxGeometry(inspectorBoxHeight,inspectorBoxboxWidth,0.1)
+	var mesh = new THREE.Mesh(inspectorGeometry, inspectorMat)
+	mesh.position.x = inspectorPositionX + inspectorBoxdeltaX
+	mesh.position.y = inspectorPositionY - inspectorBoxdeltaY
+	mesh.position.z = inspectorPositionZ
+	
+	inspectorMesh = mesh
+	inspectorGroup.add(mesh)
 	scene.add(inspectorGroup)
 }
 
@@ -941,7 +958,7 @@ function buildInspectorInfoMetadataLabels(metadata) {
     	fieldValue = fieldInfo.formatterFunction ? fieldInfo.formatterFunction.call(null, fieldValue) : fieldValue
     			
     	var textPosition = [inspectorPositionX, inspectorPositionY - fieldIndex *inspectorPositionDeltaY , inspectorPositionZ]
-    	texts.add(buildAxisText(fieldInfo.name + ': ' + fieldValue, inspectorTextColor, textPosition , [0, 0, 0]));
+    	texts.add(buildAxisText(fieldInfo.name + ': ' + fieldValue, inspectorTextColor, textPosition , [0, 0, 0], inspectorTextHeight));
     	fieldIndex++
     }
 	return texts
@@ -1008,11 +1025,12 @@ function buildCubeLabels(position, labels, length) {
     return texts;
 }
 
-function buildAxisText(text, colorHex, position, rotation) {
+function buildAxisText(text, colorHex, position, rotation, textHeight) {
     var textMaterial = new THREE.MeshBasicMaterial({ color: colorHex, overdraw: 0.5 });
+    textHeight = textHeight || captionTextHeight
     var text3d = new THREE.TextGeometry(text, {
-	size: captionTextHeight,
-	height: captionTextHeight * 0.1,
+	size: textHeight,
+	height: textHeight * 0.1,
 	curveSegments: 2,
 	font: "helvetiker"
     });
@@ -1446,12 +1464,16 @@ function initLogo() {
 	osocoLogo = mesh
 }
 
+var threePlace = {x:-95, y:-760, z:500}
 function loop() {
 	if(labOpen) {
 		vrControls.update();
 		labMenu.updateAll();
 		if(osocoLogo) {
 			THREE.putElementInFrontOfCamera(camera, osocoLogo, {x:10, y:10, z:-25})
+		}
+		if(inspectorGroup) {
+			THREE.putElementInFrontOfCamera(camera, inspectorGroup, threePlace)
 		}
 		labVrEffect.render(scene, camera);
 		requestAnimationFrame( loop );
