@@ -85,8 +85,8 @@ var labelTextColor = 0xAAAAAA
 var statsCubeColor = 0xA5A5A5
 
 var captionPositionX = 1050
-var captionPositionY = isMobile ? 600 : 900
-var captionPositionZ = isMobile ? 550 : -550
+var captionPositionY = isMobile ? 1200 : 900
+var captionPositionZ = isMobile ? 1200 : -550
 var captionTextMargin = 50
 var captionDeltaY = 65
 var captionRotationAngle = isMobile ? (Math.PI / 2) : (Math.PI / 3)
@@ -100,12 +100,14 @@ var defaultFilterEnabled = true;
 var defaultFilterPositionX = -1200;
 var filterPositionDeltaX = [0, 2200, 200, 2400, 400,  2000];
 var menuDefaultX = isMobile ? -950 : -950
-var menuDefaultY = isMobile ? 850 : 1500
-var menuDefaultZ = isMobile ? 550 : 400
+var menuDefaultY = isMobile ? 1200 : 1500
+var menuDefaultZ = isMobile ? 1200 : 400
 var menuDefaultDeltaY = isMobile ? 200 : 250
+var inspectorPlace = isMobile ?  {x:10, y:15, z:-100} : {x:-92, y:-760, z:475}
 var filterIdMoving = -1;
 var filterIdCounter = 0;
 var paymentsPerSphere = 250;
+var performaceFactor = isMobile ? 5 : 0
 var paymentBucket = 500;
 var radioPerPaymentBucket = 15;
 var maxRadius = 100;
@@ -121,9 +123,9 @@ var daysOfMonth = [
 ];
 
 var currentDate = 0;
-var inspectorPositionX = isMobile ? -250 : 100
-var inspectorPositionY = isMobile ? 600 : 775
-var inspectorPositionZ = -550
+var inspectorPositionX = isMobile ? 0 : 100
+var inspectorPositionY = isMobile ? 0 : 775
+var inspectorPositionZ = isMobile ? 0 : -550
 var inspectorPositionDeltaY = 3
 var inspectorTextHeight = 2
 var inspectorTextColor = 0xFFFFFF
@@ -134,6 +136,8 @@ var vertices = {};
 var cubeJoints = [];
 var osocoLogoText1
 var osocoLogoText2
+var osocoLogoText1Place = isMobile ? {x:3, y:-5, z:-25} : {x:10, y:-10, z:-25}
+var osocoLogoText2Place = isMobile ? {x:3, y:-4, z:-25} : {x:10, y:-9, z:-25}
 
 function init() {
     // camera
@@ -142,8 +146,8 @@ function init() {
     var cameraNearPlane = 1;
     var cameraFarPlane = 15000;
     camera = new THREE.PerspectiveCamera(cameraFOV, cameraAspectRatio, cameraNearPlane, cameraFarPlane);
-    camera.position.z = 750;
-    camera.position.y = 650;
+    camera.position.z = 1200;
+    camera.position.y = 1200;
     camera.lookAt( new THREE.Vector3( 0, 0, 0 ) )        
 
     scene = new THREE.Scene();
@@ -382,63 +386,63 @@ function populateWorld() {
     var x, y, z, w, h, d,p, date;
     for (var day = fromDay; day < toDay; day++)
     {
-        date = dataset[categories[0]].stats[day].date;
-        y = (day - fromDay + 1) * yGapBetweenDays;
-
-        //Performance only one category
-        for (var categoryIdx = 0; categoryIdx < categories.length; categoryIdx++) {
-        //for (var categoryIdx = 0; categoryIdx < 1; categoryIdx++) {
-            var category = categories[categoryIdx];
-            var cubesByCategoryAndDay = dataset[category].stats[day].cube;
-            
-            for (var cubeIdx = 0; cubeIdx < cubesByCategoryAndDay.length; cubeIdx++) {
-                var cube = cubesByCategoryAndDay[cubeIdx];
-
-                var numBodiesPerCube =
-                    Math.floor(cube.num_payments / paymentsPerSphere) +
-                    ((cube.num_payments % paymentsPerSphere > 0) ? 1 : 0);
-                
-                for (var j = 0; j < numBodiesPerCube; j++) {
-                    x = -100 + Math.random()*200;
-                    z = -100 + Math.random()*200;
-		    w = Math.min((1 + Math.floor(cube.avg / paymentBucket)) * radioPerPaymentBucket, maxRadius);                    
-                    var numPayments = (((j + 1) * paymentsPerSphere) > cube.num_payments) ?
-                        cube.num_payments % paymentsPerSphere :
-                        paymentsPerSphere;
-                    
-                    // Create sphere body and mesh
-                    var sphereMetadata = {
-                        date: date,
-                        category: category,
-                        payments: numPayments,
-                        avg: cube.avg,
-                        gender: cube.hash.substring(0,1),
-                        age: cube.hash.substring(2),
-                        landed: false,
-                        isData: true
-                    };
-                    config[3] = spheres_mask;
-                    config[4] = all_mask;
-                    bodys[i] = new OIMO.Body({
-                        name: 'sphere-' + i,
-                        type:'sphere',
-                        size:[w*0.5],
-                        pos:[x,y,z],
-                        move:true,
-                        sleeping: false,
-                        world:world,
-                        metadata: sphereMetadata,
-                        config: config});
-                    meshs[i] = new THREE.Mesh( geos.sphere, mats['sph.' + category]);
-                    meshs[i].name = i;
-                    meshs[i].userData = sphereMetadata;
-                    meshs[i].scale.set( w*0.5, w*0.5, w*0.5 );           
-                    meshs[i].castShadow = true;
-                    meshs[i].receiveShadow = true;
-                    //scene.add(meshs[i++]);
-                    spheres.add(meshs[i++]);
-                } // bodies                    
-            } // cubes                
+        if(!performaceFactor || (day % performaceFactor) == 0) {
+	    	date = dataset[categories[0]].stats[day].date;
+	        y = (day - fromDay + 1) * yGapBetweenDays;
+	        for (var categoryIdx = 0; categoryIdx < categories.length; categoryIdx++) {
+	        //for (var categoryIdx = 0; categoryIdx < 1; categoryIdx++) {
+	            var category = categories[categoryIdx];
+	            var cubesByCategoryAndDay = dataset[category].stats[day].cube;
+	            
+	            for (var cubeIdx = 0; cubeIdx < cubesByCategoryAndDay.length; cubeIdx++) {
+	                var cube = cubesByCategoryAndDay[cubeIdx];
+	
+	                var numBodiesPerCube =
+	                    Math.floor(cube.num_payments / paymentsPerSphere) +
+	                    ((cube.num_payments % paymentsPerSphere > 0) ? 1 : 0);
+	                
+	                for (var j = 0; j < numBodiesPerCube; j++) {
+	                    x = -100 + Math.random()*200;
+	                    z = -100 + Math.random()*200;
+			    w = Math.min((1 + Math.floor(cube.avg / paymentBucket)) * radioPerPaymentBucket, maxRadius);                    
+	                    var numPayments = (((j + 1) * paymentsPerSphere) > cube.num_payments) ?
+	                        cube.num_payments % paymentsPerSphere :
+	                        paymentsPerSphere;
+	                    
+	                    // Create sphere body and mesh
+	                    var sphereMetadata = {
+	                        date: date,
+	                        category: category,
+	                        payments: numPayments,
+	                        avg: cube.avg,
+	                        gender: cube.hash.substring(0,1),
+	                        age: cube.hash.substring(2),
+	                        landed: false,
+	                        isData: true
+	                    };
+	                    config[3] = spheres_mask;
+	                    config[4] = all_mask;
+	                    bodys[i] = new OIMO.Body({
+	                        name: 'sphere-' + i,
+	                        type:'sphere',
+	                        size:[w*0.5],
+	                        pos:[x,y,z],
+	                        move:true,
+	                        sleeping: false,
+	                        world:world,
+	                        metadata: sphereMetadata,
+	                        config: config});
+	                    meshs[i] = new THREE.Mesh( geos.sphere, mats['sph.' + category]);
+	                    meshs[i].name = i;
+	                    meshs[i].userData = sphereMetadata;
+	                    meshs[i].scale.set( w*0.5, w*0.5, w*0.5 );           
+	                    meshs[i].castShadow = true;
+	                    meshs[i].receiveShadow = true;
+	                    //scene.add(meshs[i++]);
+	                    spheres.add(meshs[i++]);
+	                } // bodies                    
+	            } // cubes     
+        	}
         } // categories
     } // days
 
@@ -1488,17 +1492,16 @@ function buildAxisText(text, colorHex, position, rotation, textHeight) {
     return textMesh;
 }
 
-var threePlace = {x:-92, y:-760, z:475}
 function loop() {
 	if(labOpen) {
 		vrControls.update();
 		labMenu.updateAll();
 		if(osocoLogoText1 && osocoLogoText2) {
-			THREE.putElementInFrontOfCamera(camera, osocoLogoText1, {x:10, y:-10, z:-25})
-			THREE.putElementInFrontOfCamera(camera, osocoLogoText2, {x:10, y:-9, z:-25})
+			THREE.putElementInFrontOfCamera(camera, osocoLogoText1, osocoLogoText1Place)
+			THREE.putElementInFrontOfCamera(camera, osocoLogoText2, osocoLogoText2Place)
 		}
 		if(inspectorGroup) {
-			THREE.putElementInFrontOfCamera(camera, inspectorGroup, threePlace)
+			THREE.putElementInFrontOfCamera(camera, inspectorGroup, inspectorPlace)
 		}
 		labVrEffect.render(scene, camera);
 		requestAnimationFrame( loop );
