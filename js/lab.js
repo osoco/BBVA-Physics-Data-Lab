@@ -12,6 +12,11 @@ var filterWallBody, filterWall1, filterWall2, filterWall3, filterWall4;
 var isMobile = false;
 var antialias = true;
 
+if(isMobilePhone()) {
+	isMobile = true;
+	antialias = false;
+}
+
 var geos = {};
 var mats = {};
 
@@ -80,24 +85,24 @@ var labelTextColor = 0xAAAAAA
 var statsCubeColor = 0xA5A5A5
 
 var captionPositionX = 1050
-var captionPositionY = 800
-var captionPositionZ = -550
+var captionPositionY = isMobile ? 600 : 900
+var captionPositionZ = isMobile ? 550 : -550
 var captionTextMargin = 50
-var captionDeltaY = 50
-var rotationAngle = Math.PI / 3
-var captionRotation = [0, 2*Math.PI - rotationAngle ,0]
+var captionDeltaY = 65
+var captionRotationAngle = isMobile ? (Math.PI / 2) : (Math.PI / 3)
+var captionRotation = [0, 2*Math.PI - captionRotationAngle ,0]
 var captionTextColor = textColor
-var captionTextHeight = 20
+var captionTextHeight = 50
 
 var filterColors = [ '#633', '#363', '#336' ];
 var filters = {};
 var defaultFilterEnabled = true;
-var defaultFilterPositionX = -1000;
-var filterPositionDeltaX = [0, 200, 400,  1550, 1750, 1950];
-var menuDefaultX = -950
-var menuDefaultZ = -550
-var menuDefaultY = 600
-var menuDefaultDeltaY = 200
+var defaultFilterPositionX = -1200;
+var filterPositionDeltaX = [0, 2200, 200, 2400, 400,  2000];
+var menuDefaultX = isMobile ? -950 : -950
+var menuDefaultZ = isMobile ? -800 : 400
+var menuDefaultY = isMobile ? 600 : 1500
+var menuDefaultDeltaY = isMobile ? 200 : 250
 var filterIdMoving = -1;
 var filterIdCounter = 0;
 var paymentsPerSphere = 250;
@@ -116,37 +121,27 @@ var daysOfMonth = [
 ];
 
 var currentDate = 0;
-var inspectorPositionX = 250
-var inspectorPositionY = 775
+var inspectorPositionX = isMobile ? -250 : 100
+var inspectorPositionY = isMobile ? 600 : 775
 var inspectorPositionZ = -550
-var inspectorPositionDeltaY = 50
-var inspectorTextColor = textColor
+var inspectorPositionDeltaY = 65
+var inspectorTextColor = 0xFFB702
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
 var inspectorGroup;
 var statsCube;
 var vertices = {};
 var cubeJoints = [];
+var osocoLogo
 
 function init() {
-    var n = navigator.userAgent;
-    if (n.match(/Android/i) ||
-        n.match(/webOS/i) ||
-        n.match(/iPhone/i) ||
-        n.match(/iPad/i) ||
-        n.match(/iPod/i) ||
-        n.match(/BlackBerry/i) ||
-        n.match(/Windows Phone/i)) {
-        isMobile = true;
-        antialias = false;
-    }
-
     // camera
     var cameraFOV = 60;
     var cameraAspectRatio = window.innerWidth / window.innerHeight;
-    var cameraNearPlane = 0.1;
+    var cameraNearPlane = 1;
     var cameraFarPlane = 15000;
     camera = new THREE.PerspectiveCamera(cameraFOV, cameraAspectRatio, cameraNearPlane, cameraFarPlane);
-    initCamera(0, 70, 2000);
+    camera.position.z = 750;
+    camera.position.y = 650;
     camera.lookAt( new THREE.Vector3( 0, 0, 0 ) )        
 
     scene = new THREE.Scene();
@@ -162,7 +157,7 @@ function init() {
     raycaster = new THREE.Raycaster();
     
     // renderer
-    renderer = new THREE.WebGLRenderer({precision: "mediump", antialias: antialias});
+    renderer = new THREE.WebGLRenderer({antialias: antialias});
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.autoClear = false;
     
@@ -170,38 +165,37 @@ function init() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        labVrEffect.setSize( window.innerWidth, window.innerHeight );
       };
       window.addEventListener('resize', onResize, false);
       
     //leap-hands
     initLeap()
-    initControls()
+    initControlsAndEffect()
    
     // lights
-    if (!isMobile){
-        var ambientLight = new THREE.AmbientLight(0x555557);
-        light = new THREE.DirectionalLight(0xffffff , 1.3);
-        light.position.set( 300, 1000, 500 );
-        light.target.position.set( 0, 0, 0 );
-        light.castShadow = true;
-        light.shadowCameraNear = 500;
-        light.shadowCameraFar = 1600;
-        light.shadowCameraFov = 70;
-        light.shadowBias = 0.0001;
-        light.shadowDarkness = 0.7;
-        //light.shadowCameraVisible = true;
-        light.shadowMapWidth = light.shadowMapHeight = 1024;
+    var ambientLight = new THREE.AmbientLight(0x555557);
+    light = new THREE.DirectionalLight(0xffffff , 1.3);
+    light.position.set( 300, 1000, 500 );
+    light.target.position.set( 0, 0, 0 );
+    light.castShadow = true;
+    light.shadowCameraNear = 500;
+    light.shadowCameraFar = 1600;
+    light.shadowCameraFov = 70;
+    light.shadowBias = 0.0001;
+    light.shadowDarkness = 0.7;
+    //light.shadowCameraVisible = true;
+    light.shadowMapWidth = light.shadowMapHeight = 1024;
 
-        scene.add(ambientLight);
-        scene.add( light );
-        
-        renderer.shadowMapEnabled = true;
-        renderer.shadowMapType = THREE.PCFShadowMap;
-    }
-
+    scene.add(ambientLight);
+    scene.add( light );
+    
+    renderer.shadowMapEnabled = true;
+    renderer.shadowMapType = THREE.PCFShadowMap;
+    
     // background
     var buffgeoBack = new THREE.BufferGeometry();
-    buffgeoBack.fromGeometry( new THREE.IcosahedronGeometry(3000,1));
+    buffgeoBack.fromGeometry( new THREE.IcosahedronGeometry(3000,5));
     var back = new THREE.Mesh(buffgeoBack,
                               new THREE.MeshBasicMaterial( {
                                   map: gradTexture([[0.75,0.6,0.4,0.25], ['#1B1D1E','#3D4143','#72797D', '#b0babf']]),
@@ -220,44 +214,24 @@ function init() {
     geos['cyl'].fromGeometry( new THREE.CylinderGeometry(1, 1, 1, 20));
     
     // materials
-    if(!isMobile){
-        mats['sph.mx_barsandrestaurants'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_barsandrestaurants'), name:'sph.mx_barsandrestaurants' } );
-        mats['sph.mx_services'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_services'), name:'sph.mx_services' } );
-        mats['sph.mx_food'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_food'), name:'sph.mx_food' } );            
-	mats['sph.mx_office'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_office'), name:'sph.mx_office' } );            
-        mats['sph.mx_car'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_car'), name:'sph.mx_car' } );            
-	mats['sph.mx_auto'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_auto'), name:'sph.mx_auto' } );            
-	mats['sph.mx_travel'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_travel'), name:'sph.mx_travel' } );            
-	mats['sph.mx_sport'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_sport'), name:'sph.mx_sport' } );            
-	mats['sph.mx_beauty'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_beauty'), name:'sph.mx_beauty' } );            
-	mats['sph.mx_health'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_health'), name:'sph.mx_health' } );            
-	mats['sph.mx_fashion'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_fashion'), name:'sph.mx_fashion' } );            
-	mats['sph.mx_leisure'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_leisure'), name:'sph.mx_leisure' } );            
+    
+    mats['sph.mx_barsandrestaurants'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_barsandrestaurants'), name:'sph.mx_barsandrestaurants' } );
+    mats['sph.mx_services'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_services'), name:'sph.mx_services' } );
+    mats['sph.mx_food'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_food'), name:'sph.mx_food' } );            
+    mats['sph.mx_office'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_office'), name:'sph.mx_office' } );            
+    mats['sph.mx_car'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_car'), name:'sph.mx_car' } );            
+    mats['sph.mx_auto'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_auto'), name:'sph.mx_auto' } );            
+    mats['sph.mx_travel'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_travel'), name:'sph.mx_travel' } );            
+    mats['sph.mx_sport'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_sport'), name:'sph.mx_sport' } );            
+    mats['sph.mx_beauty'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_beauty'), name:'sph.mx_beauty' } );            
+    mats['sph.mx_health'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_health'), name:'sph.mx_health' } );            
+    mats['sph.mx_fashion'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_fashion'), name:'sph.mx_fashion' } );            
+    mats['sph.mx_leisure'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_leisure'), name:'sph.mx_leisure' } );            
 
-        mats['box'] = new THREE.MeshPhongMaterial( { map: basicTexture(1), name:'box' } );
-        mats['filter'] = new THREE.MeshLambertMaterial( { color: 0x3D4143, transparent: true, opacity: 0.8 } );            
-        mats['ground'] = new THREE.MeshBasicMaterial( { color:debugColor, wireframe:true, transparent:true, opacity:0, fog: false, depthTest: false, depthWrite: false});
-    } else {
-        mats['sph.mx_barsandrestaurants'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_barsandrestaurants'), name:'sph.mx_barsandrestaurants' } );
-        mats['sph.mx_services'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_services'), name:'sph.mx_services' } );
-        mats['sph.mx_food'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_food'), name:'sph.mx_food' } );            
-	mats['sph.mx_office'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_office'), name:'sph.mx_office' } );    
-        mats['sph.mx_car'] = new THREE.MeshBasicMaterial( { map: basicTexture('sph.mx_car'), name:'sph.mx_car' } );            
-	mats['sph.mx_auto'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_auto'), name:'sph.mx_auto' } );            
-	mats['sph.mx_travel'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_travel'), name:'sph.mx_travel' } );            
-        mats['sph.mx_sport'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_sport'), name:'sph.mx_sport' } );            
-	mats['sph.mx_beauty'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_beauty'), name:'sph.mx_beauty' } );            
-	mats['sph.mx_health'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_health'), name:'sph.mx_health' } );
-	mats['sph.mx_fashion'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_fashion'), name:'sph.mx_fashion' } );
-	mats['sph.mx_leisure'] = new THREE.MeshPhongMaterial( { map: basicTexture('sph.mx_leisure'), name:'sph.mx_leisure' } );                    
-
-        
-        mats['box'] = new THREE.MeshBasicMaterial( { map: basicTexture(1), name:'box' } );
-        mats['filter'] = new THR
-        EE.MeshLambertMaterial( { color: 0x3D4143, transparent:true, opacity:0.6 } );            
-        mats['ground'] = new THREE.MeshBasicMaterial( { color:debugColor, wireframe:true, transparent:true, opacity:0, fog: false, depthTest: false, depthWrite: false});
-    }
-
+    mats['box'] = new THREE.MeshPhongMaterial( { map: basicTexture(1), name:'box' } );
+    mats['filter'] = new THREE.MeshLambertMaterial( { color: 0x3D4143, transparent: true, opacity: 0.8 } );            
+    mats['ground'] = new THREE.MeshBasicMaterial( { color:debugColor, wireframe:true, transparent:true, opacity:0, fog: false, depthTest: false, depthWrite: false});
+      
     container = document.getElementById("lab");
     container.appendChild( renderer.domElement );
 
@@ -281,9 +255,9 @@ function initCaption() {
 		categorySphere.position.z = captionPositionZ
 		
 		var texPosition = [
-            (captionPositionX) + captionTextMargin *Math.cos(rotationAngle), 
+            (captionPositionX) + captionTextMargin *Math.cos(captionRotationAngle), 
             positionY - captionTextHeight/2, 
-            captionPositionZ + captionTextMargin *Math.sin(rotationAngle)
+            captionPositionZ + captionTextMargin *Math.sin(captionRotationAngle)
         ]
 		var text = buildAxisText(categoryAsString, captionTextColor, texPosition, captionRotation)
 		scene.add(text)
@@ -291,10 +265,10 @@ function initCaption() {
 	}
 }
 
-function addStaticBox(size, position, rotation, spec) {
-    var mesh;
-    if(spec) mesh = new THREE.Mesh( geos.box, mats.filter );
-    else mesh = new THREE.Mesh( geos.box, mats.box );
+function addStaticBox(size, position, rotation, spec, material) {
+	var mesh;
+	if(spec) mesh = new THREE.Mesh( geos.box, material || mats.filter );
+    else mesh = new THREE.Mesh( geos.box, material || mats.box );
     mesh.scale.set( size[0], size[1], size[2] );
     mesh.position.set( position[0], position[1], position[2] );
     mesh.rotation.set( rotation[0]*ToRad, rotation[1]*ToRad, rotation[2]*ToRad );
@@ -484,8 +458,8 @@ function addGroundToWorld() {
     // add ground    
     config[3] = walls_mask;
     config[4] = all_mask & ~filtered_mask;
-    var ground = new OIMO.Body({size:[2000, 100, 1000], pos:[0,-50,0], world:world, config: config});
-    groundMesh = addGround([2000, 1, 1000], [0,0,0], [0,0,0]);
+    var ground = new OIMO.Body({size:[2400, 100, 1000], pos:[0,-50,0], world:world, config: config});
+    groundMesh = addGround([2400, 1, 1000], [0,0,0], [0,0,0]);
     groundContents.add(groundMesh);    
 }
 
@@ -587,8 +561,11 @@ function currentTime() {
 	return new Date().getTime()
 }
 // Raycast Test
-var rayTest = function () {
-	if(inspectorActivated) {
+var raycastingAttemps = 0
+var raycasting = function () {
+	raycastingAttemps = (raycastingAttemps + 1) % 4 
+	if(inspectorActivated && raycastingAttemps == 0) {
+
 		var vector = new THREE.Vector3( 0, 0, 1 );
         projector.unprojectVector( vector, camera );
         raycaster.set( camera.position, vector.sub(camera.position).normalize());
@@ -614,8 +591,9 @@ var rayTest = function () {
             	updateInspectionInfo(selectedMesh)
             	selectedMesh.isSelected = true
             }
-        }        
-	}
+        }
+	} 
+	
     
 	/*
     if (filterIdMoving > -1) {
@@ -697,7 +675,7 @@ function enableFilter(filterId) {
 	            move: false,
 	            config: config
 	        });
-	        filter.wallMesh = addStaticBox([20, 150, 1000], filterPosition, [0,0,0], true);
+	        filter.wallMesh = addStaticBox([20, 150, 1000], filterPosition, [0,0,0], true, filter.material);
 	        scene.add(filter.wall);
 	        bodys[bodys.length] = filter.wallBody;
 	        meshs[meshs.length] = filter.wallMesh;
@@ -764,11 +742,12 @@ function removeFilterWall(filterId) {
     //meshs.splice(filter.bodyIndex, 1);
 }
 
-function createNewFilter(name, expression) {
+function createNewFilter(name, expression, color) {
     var filter = {
         id: filterIdCounter++,
         name: name,
         expression: expression,
+        material: new THREE.MeshBasicMaterial( { color: color, transparent:true, opacity:0.6} ), 
         color: filterColors[filterIdCounter % filterColors.length],
         enabled: defaultFilterEnabled,
         movingEnabled: false,
@@ -951,7 +930,7 @@ function buildInspectorInfoMetadataLabels(metadata) {
     		'date': {name: 'Date', formatterFunction:dateAsString},
     		'category': {name: 'Category', formatterFunction: cagetoryAsString},
     		'payments': {name: 'Number of payments', formatterFunction:null},
-    		'avg': {name: 'Average payment', formatterFunction:avgAsString},
+    		'avg': {name: 'Avg. payment', formatterFunction:avgAsString},
     		'gender': {name: 'Gender', formatterFunction: genderAsString},
     		'age': {name: 'Age', formatterFunction: ageAsString}
     	}
@@ -993,12 +972,30 @@ function buildCubeAxes(position, length) {
 }
 
 function buildCubeLabels(position, labels, length) {
-    var texts = new THREE.Object3D();   
+    var texts = new THREE.Object3D();  
+    var step = 1000 / 3; 
+    
     texts.add(buildAxisText(labels[0], textColor, [length, 0, 0], [0, 0, 0]));
+    texts.add(buildAxisText("Male", textColor, [step, 0, 0], [0, 0, Math.PI/2]))
+    texts.add(buildAxisText("Female", textColor, [step * 2 , 0, 0], [0, 0, Math.PI/2]))
+    
+    
     texts.add(buildAxisText(labels[1], textColor, [0, length, 0], [0, 0, Math.PI/2]));
+    for(var i = 0; i <= 6 ; i ++ ) {
+    	texts.add(buildAxisText(ageAsString(i), textColor, [0, 100 + (1000 / 8) * i , 0], [0, 0, 0]))	
+    }
+    
     var labelZ = buildAxisText(labels[2], textColor, [0, 0, length], [0, Math.PI/2, 0]);
     texts.add(labelZ);
-
+    
+    var maxPayment = getMaxAvgPaymentNotFiltered()
+    var paymentStep = Math.round((maxPayment / 5) / 100) * 100
+    var step = 200*(paymentStep*5 / maxPayment)
+    
+    for(var i = 1; i <= 5; i++) {
+    	texts.add(buildAxisText(paymentStep*i + " $", textColor, [0, 0, step*i], [0 , 0 , Math.PI/2]));
+    }
+    
     labelZ.geometry.computeBoundingBox();
     labelZBoundingBox = labelZ.geometry.boundingBox;
     var labelZWidth = (labelZBoundingBox.max.x - labelZBoundingBox.min.x);
@@ -1126,35 +1123,46 @@ function enableStatsCube() {
 function setupSampleFilters() {
     var sampleFilters = [
         {
+        	color: 0x2D0051,
             name: "Men payments",
             expression: "$gender == 'M'"
         },
         {
+        	color: 0xFF00FF,
             name: "Women payments",
             expression: "$gender == 'F'"
         },
         {
-            name: "Age group 1",
-            expression: "$age_range == 1"
+        	color: 0x7821A5,
+            name: "Payment > 1000",
+            expression: "$avg_payment > 1000"
         },
         {
-            name: "Age group 2 (36-45 years)",
-            expression: "$age_range == 2"
+        	color: 0xAC64FF,
+            name: "Payment < 1000",
+            expression: "$avg_payment < 1000"
         },
         {
-            name: "Age group 3 (36-45 years)",
-            expression: "$age_range == 3"
+        	color: 0xE5007D,
+            name: "Excludes beauty",
+            expression: "$category != 'mx_beauty'"
+        },
+        {
+        	color: 0xFF89D0,
+            name: "Excludes auto",
+            expression: "$category != 'mx_auto'"
         },
     ];
     var filter;
     for (var i in sampleFilters) {
-        filter = createNewFilter(sampleFilters[i].name, sampleFilters[i].expression);
+        filter = createNewFilter(sampleFilters[i].name, sampleFilters[i].expression, sampleFilters[i].color)    
         filter.enabled = false;
         filters[filter.id] = filter;
     }    
 }
 
 init();
+initLogo();
 setupSampleFilters();
 initMenu();
 initCaption();
@@ -1313,21 +1321,39 @@ function initLeap() {
 	  */
 }
 
+
+function initEffect() {
+	var effect
+	if(isMobile) {
+		effect = new THREE.StereoEffect(renderer);
+		effect.separation = 0;
+		effect.setSize( window.innerWidth , window.innerHeight);
+    } else {
+    	effect = new THREE.VREffect(renderer);
+    }
+	return effect
+}
+
 function initControls() {
-    //Controls
-    //controls = new THREE.LeapPinchRotateControls( camera , controller );
-
-	// Moves (translates and rotates) the camera
-	  vrControls = new THREE.VRControls(camera, true, 1000, {x:0, y:0, z: -450});
-
-	  vrEffect = new THREE.VREffect(renderer);
-
+	if(isMobile) {
+		var controls = new THREE.DeviceOrientationControls(camera) 
+		return controls
+	} else {
+		return new THREE.VRControls(camera, true, 1000, {x:0, y:400, z: 250});
+	}
+}
+function initControlsAndEffect() {
+      vrControls = initControls()
+	    
+      
+      labVrEffect = initEffect()
+	  
 	  onkey = function(event) {
 	    if (event.key === 'z') {
 	      vrControls.zeroSensor();
 	    }
 	    if (event.key === 'f') {
-	      return vrEffect.setFullScreen(true);
+	      return labVrEffect.setFullScreen(true);
 	    }
 	  };
 
@@ -1342,7 +1368,8 @@ function initMenu() {
     labMenu = new THREE.Menu(scene, camera, projector, raycaster, {
     	drawAsLinear: true, 
     	drawBackground:false, 
-    	menuItemSize : 100
+    	menuItemSize : isMobile ? 150 : 200, 
+    	rotation: isMobile ? 3*Math.PI/2 :  3*Math.PI/2
     })
     
     var statusMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(0))
@@ -1364,22 +1391,26 @@ function initMenu() {
     
     labMenu.addMenuSelect(statusMenuSelect)
     
-    var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(1))
+    var filtersOrder = isMobile ? [[0,1,2,3,4,5]] : [[0,1], [2,3], [4,5]] 
     
-    for(var filterId in filters) {
-    	var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), 
-    				buildCheckedImageNameByFilterId(filterId), null, (function() {
-    		var filterIdCopy = filterId
-    		return function() {
-    			toggleFilter(filterIdCopy)
-    		}
-    	})()) 
-        filtersMenuSelect.addMenuItem(filterMenuItem)    
+    for(var filtersIndex = 0; filtersIndex < filtersOrder.length; filtersIndex ++) {
+    	var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(filtersIndex + 1 ))
+    	
+    	for(var filterIdIndex in filtersOrder[filtersIndex]) {
+    		var filterId = filtersOrder[filtersIndex][filterIdIndex]
+    		var filterMenuItem = labMenu.createActionMenuItem(buildImageNameByFilterId(filterId), 
+	    				buildCheckedImageNameByFilterId(filterId), null, (function() {
+	    		var filterIdCopy = filterId
+	    		return function() {
+	    			toggleFilter(filterIdCopy)
+	    		}
+	    	})()) 
+	        filtersMenuSelect.addMenuItem(filterMenuItem)
+	    }
+    	labMenu.addMenuSelect(filtersMenuSelect)
     }
     
-    labMenu.addMenuSelect(filtersMenuSelect)
-    
-    var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(2))
+    var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(4))
     var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', 'img/menu/statsCube_checked.png', null, function() {
     	toggleStatsCubeInfo()
     })
@@ -1393,7 +1424,8 @@ function initMenu() {
 
 function buildPositionForMenuByRowIndex(rowIndex) {
 	var yPosition = menuDefaultY - rowIndex* menuDefaultDeltaY
-	return {x: menuDefaultX, y: yPosition,  z:menuDefaultZ}
+	var zPos = menuDefaultZ
+	return {x: menuDefaultX, y: yPosition, z:zPos}
 }
 
 function buildImageNameByFilterId(filterId) {
@@ -1404,13 +1436,39 @@ function buildCheckedImageNameByFilterId(filterId) {
 	return 'img/menu/filters/' + filterId + '_checked.png'
 }
 
+function initLogo() {
+	var texture = new THREE.ImageUtils.loadTexture( 'img/osocoLogo.png' )
+	var imgGeometry = new THREE.PlaneBufferGeometry(3,1)
+	var imgMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide, transparent: false, color: 0xFFFFFF});
+	var mesh = new THREE.Mesh(imgGeometry, imgMaterial)
+	mesh.position.x = 10000;
+	scene.add(mesh)
+	osocoLogo = mesh
+}
+
 function loop() {
 	if(labOpen) {
 		vrControls.update();
 		labMenu.updateAll();
-		vrEffect.render(scene, camera);
-	    requestAnimationFrame( loop );
+		if(osocoLogo) {
+			THREE.putElementInFrontOfCamera(camera, osocoLogo, {x:10, y:10, z:-25})
+		}
+		labVrEffect.render(scene, camera);
+		requestAnimationFrame( loop );
+	    raycasting()
+	    
 	} else {
 		setTimeout(loop, 100)
 	}
+}
+
+function isMobilePhone() {
+	var n = navigator.userAgent;
+	return  (n.match(/Android/i) ||
+        n.match(/webOS/i) ||
+        n.match(/iPhone/i) ||
+        n.match(/iPad/i) ||
+        n.match(/iPod/i) ||
+        n.match(/BlackBerry/i) ||
+        n.match(/Windows Phone/i)) 
 }

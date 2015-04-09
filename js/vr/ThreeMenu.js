@@ -16,6 +16,20 @@ String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
+THREE.putElementInFrontOfCamera = function (camera, element, place) {
+	var vec = new THREE.Vector3(place.x, place.y, place.z);
+	vec.applyQuaternion( camera.quaternion );
+
+	element.position.copy( vec );
+	
+	element.position.x += camera.position.x  
+	element.position.y += camera.position.y
+	element.position.z += camera.position.z
+	
+	element.rotation.copy(camera.rotation)
+	element.quaternion.copy(camera.quaternion)
+}
+
 ;(function() {
 	function getCurrentTime() {
 		return new Date().getTime()
@@ -24,6 +38,7 @@ String.prototype.capitalize = function() {
      * Options:
      * drawAsLinear -> draw linear menuSelect
      * drawBackground -> draw background
+     * rotation -> menu rotation
      */
 	function Menu(scene, camera, projector, raycaster, options) {
 		options = options || {}
@@ -157,10 +172,7 @@ String.prototype.capitalize = function() {
 		}
 
 		function updateViewCenterPosition() {
-			var vector = new THREE.Vector3( 0.0, 0.0, 1 );
-			projector.unprojectVector( vector, camera );
-			var direction = vector.sub(camera.position).normalize()
-			drawer.updateViewCenterPosition(direction)
+			drawer.updateViewCenterPosition()
 		}
 		
 		function translateToCurrentMenu(withoutTransition) {
@@ -183,13 +195,13 @@ String.prototype.capitalize = function() {
 		var PRESELECTED_COLOR = 0xFFCE00 // 0x00ffff
 		var SELECTED_COLOR = PRESELECTED_COLOR //0xff0000
 
-		var VIEW_CENTER_RADIOUS = 0.25
-		var VIEW_CENTER_TUBE_RADIOUS = 0.1
+		var VIEW_CENTER_RADIOUS = 1
+		var VIEW_CENTER_TUBE_RADIOUS = 0.2
 		var VIEW_RADIAL_SEGMENTS = 8*10
 		var VIEW_TUBULAR_SEGMENTS = 6*15
 		var VIEW_ARC = Math.PI * 2;
 		var VIEW_CENTER_COLOR = 0x888888
-		var VIEW_CENTER_DISTANCE_FACTOR = 5
+		var VIEW_CENTER_DISTANCE_FACTOR = 25
 
 		var MENU_RADIOUS = 30
 		var MENU_ITEM_ROTATION_DELTA = Math.PI / 8
@@ -205,8 +217,9 @@ String.prototype.capitalize = function() {
 		
 		var BACKGROUND_IMAGE = 'img/menu/background.jpg'
 		var drawAsLinear = options.drawAsLinear
+		var directionRotation = drawAsLinear && options.rotation || 0
 	    var drawBackground = options.drawBackground
-	    var menuItemSize = options.menuItemSize || DEFAULT_MENU_ITEM_SIZE  
+	    var menuItemSize = options.menuItemSize || DEFAULT_MENU_ITEM_SIZE
 	    
 	    var MENU_LINEAR_DISTANCE = menuItemSize * 1.2
 	    
@@ -321,8 +334,9 @@ String.prototype.capitalize = function() {
 			var menuCenter = menu.center
 			mesh.position.y = menuCenter.y
 			if(drawAsLinear) {
-				mesh.position.x = menuCenter.x + MENU_LINEAR_DISTANCE * menuItemIndex
-				mesh.position.z = menuCenter.z
+				mesh.position.x = menuCenter.x + (MENU_LINEAR_DISTANCE * menuItemIndex * Math.cos(directionRotation))
+				mesh.position.z = menuCenter.z + MENU_LINEAR_DISTANCE * menuItemIndex * Math.sin(directionRotation)
+				mesh.rotation.y = Math.PI*2 - directionRotation
 			} else {
 				mesh.position.x = menuCenter.x + MENU_RADIOUS*Math.sin(rotation)
 				mesh.position.z = menuCenter.z + MENU_RADIOUS*Math.cos(rotation)
@@ -392,13 +406,8 @@ String.prototype.capitalize = function() {
 			}
 		}
 		
-		this.updateViewCenterPosition = function(direction) {
-			viewCenter.position.x = camera.position.x + direction.x * VIEW_CENTER_DISTANCE_FACTOR  
-			viewCenter.position.y = camera.position.y + direction.y * VIEW_CENTER_DISTANCE_FACTOR
-			viewCenter.position.z = camera.position.z + direction.z * VIEW_CENTER_DISTANCE_FACTOR
-			viewCenter.rotation.x = camera.rotation.x
-			viewCenter.rotation.y = camera.rotation.y
-			viewCenter.rotation.z = camera.rotation.z
+		this.updateViewCenterPosition = function() {
+			THREE.putElementInFrontOfCamera(camera, viewCenter, {x:0, y:0, z:-VIEW_CENTER_DISTANCE_FACTOR});
 		}
 	}
 
