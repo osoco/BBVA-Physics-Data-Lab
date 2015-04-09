@@ -100,8 +100,8 @@ var defaultFilterEnabled = true;
 var defaultFilterPositionX = -1200;
 var filterPositionDeltaX = [0, 2200, 200, 2400, 400,  2000];
 var menuDefaultX = isMobile ? -950 : -950
-var menuDefaultZ = isMobile ? -800 : 400
-var menuDefaultY = isMobile ? 600 : 1500
+var menuDefaultY = isMobile ? 850 : 1500
+var menuDefaultZ = isMobile ? 550 : 400
 var menuDefaultDeltaY = isMobile ? 200 : 250
 var filterIdMoving = -1;
 var filterIdCounter = 0;
@@ -1410,7 +1410,7 @@ function initMenu() {
     
     labMenu.addMenuSelect(statusMenuSelect)
     
-    var filtersOrder = isMobile ? [[0,1,2,3,4,5]] : [[0,1], [2,3], [4,5]] 
+    var filtersOrder = isMobile ? [[0,1,2,3], [4,5]] : [[0,1], [2,3], [4,5]] 
     
     for(var filtersIndex = 0; filtersIndex < filtersOrder.length; filtersIndex ++) {
     	var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(filtersIndex + 1 ))
@@ -1429,7 +1429,7 @@ function initMenu() {
     	labMenu.addMenuSelect(filtersMenuSelect)
     }
     
-    var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(4))
+    var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(1 + filtersIndex))
     var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', 'img/menu/statsCube_checked.png', null, function() {
     	toggleStatsCubeInfo()
     })
