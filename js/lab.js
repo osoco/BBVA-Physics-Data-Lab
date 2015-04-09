@@ -945,9 +945,9 @@ function avgAsString(avg) {
 function buildInspectorInfoMetadataLabels(metadata) {
 	var texts = new THREE.Object3D();   
     var fields = {
+    		'date': {name: 'Date', formatterFunction:dateAsString},
     		'gender': {name: 'Gender', formatterFunction: genderAsString},
     		'age': {name: 'Age', formatterFunction: ageAsString},
-    		'date': {name: 'Date', formatterFunction:dateAsString},
     		'category': {name: 'Category', formatterFunction: cagetoryAsString},
     		'payments': {name: 'Number of payments', formatterFunction:null},
     		'avg': {name: 'Avg. payment', formatterFunction:avgAsString},
