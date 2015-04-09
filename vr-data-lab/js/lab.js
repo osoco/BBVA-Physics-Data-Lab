@@ -85,8 +85,8 @@ var labelTextColor = 0xAAAAAA
 var statsCubeColor = 0xA5A5A5
 
 var captionPositionX = 1050
-var captionPositionY = isMobile ? 600 : 900
-var captionPositionZ = isMobile ? 550 : -550
+var captionPositionY = isMobile ? 1200 : 900
+var captionPositionZ = isMobile ? 1200 : -550
 var captionTextMargin = 50
 var captionDeltaY = 65
 var captionRotationAngle = isMobile ? (Math.PI / 2) : (Math.PI / 3)
@@ -100,12 +100,14 @@ var defaultFilterEnabled = true;
 var defaultFilterPositionX = -1200;
 var filterPositionDeltaX = [0, 2200, 200, 2400, 400,  2000];
 var menuDefaultX = isMobile ? -950 : -950
-var menuDefaultZ = isMobile ? -800 : 400
-var menuDefaultY = isMobile ? 600 : 1500
+var menuDefaultY = isMobile ? 1200 : 1500
+var menuDefaultZ = isMobile ? 1200 : 400
 var menuDefaultDeltaY = isMobile ? 200 : 250
+var inspectorPlace = isMobile ?  {x:10, y:15, z:-100} : {x:-92, y:-760, z:475}
 var filterIdMoving = -1;
 var filterIdCounter = 0;
 var paymentsPerSphere = 250;
+var performaceFactor = isMobile ? 5 : 0
 var paymentBucket = 500;
 var radioPerPaymentBucket = 15;
 var maxRadius = 100;
@@ -121,17 +123,21 @@ var daysOfMonth = [
 ];
 
 var currentDate = 0;
-var inspectorPositionX = isMobile ? -250 : 100
-var inspectorPositionY = isMobile ? 600 : 775
-var inspectorPositionZ = -550
-var inspectorPositionDeltaY = 65
-var inspectorTextColor = 0xFFB702
+var inspectorPositionX = isMobile ? 0 : 100
+var inspectorPositionY = isMobile ? 0 : 775
+var inspectorPositionZ = isMobile ? 0 : -550
+var inspectorPositionDeltaY = 3
+var inspectorTextHeight = 2
+var inspectorTextColor = 0xFFFFFF
 var inspectorActivated = false, filterActivated = false, showMoreFilterInstructions = false, statsCubeActivated = false;
 var inspectorGroup;
 var statsCube;
 var vertices = {};
 var cubeJoints = [];
-var osocoLogo
+var osocoLogoText1
+var osocoLogoText2
+var osocoLogoText1Place = isMobile ? {x:3, y:-5, z:-25} : {x:10, y:-10, z:-25}
+var osocoLogoText2Place = isMobile ? {x:3, y:-4, z:-25} : {x:10, y:-9, z:-25}
 
 function init() {
     // camera
@@ -140,8 +146,8 @@ function init() {
     var cameraNearPlane = 1;
     var cameraFarPlane = 15000;
     camera = new THREE.PerspectiveCamera(cameraFOV, cameraAspectRatio, cameraNearPlane, cameraFarPlane);
-    camera.position.z = 750;
-    camera.position.y = 650;
+    camera.position.z = 1200;
+    camera.position.y = 1200;
     camera.lookAt( new THREE.Vector3( 0, 0, 0 ) )        
 
     scene = new THREE.Scene();
@@ -380,63 +386,63 @@ function populateWorld() {
     var x, y, z, w, h, d,p, date;
     for (var day = fromDay; day < toDay; day++)
     {
-        date = dataset[categories[0]].stats[day].date;
-        y = (day - fromDay + 1) * yGapBetweenDays;
-
-        //Performance only one category
-        for (var categoryIdx = 0; categoryIdx < categories.length; categoryIdx++) {
-        //for (var categoryIdx = 0; categoryIdx < 1; categoryIdx++) {
-            var category = categories[categoryIdx];
-            var cubesByCategoryAndDay = dataset[category].stats[day].cube;
-            
-            for (var cubeIdx = 0; cubeIdx < cubesByCategoryAndDay.length; cubeIdx++) {
-                var cube = cubesByCategoryAndDay[cubeIdx];
-
-                var numBodiesPerCube =
-                    Math.floor(cube.num_payments / paymentsPerSphere) +
-                    ((cube.num_payments % paymentsPerSphere > 0) ? 1 : 0);
-                
-                for (var j = 0; j < numBodiesPerCube; j++) {
-                    x = -100 + Math.random()*200;
-                    z = -100 + Math.random()*200;
-		    w = Math.min((1 + Math.floor(cube.avg / paymentBucket)) * radioPerPaymentBucket, maxRadius);                    
-                    var numPayments = (((j + 1) * paymentsPerSphere) > cube.num_payments) ?
-                        cube.num_payments % paymentsPerSphere :
-                        paymentsPerSphere;
-                    
-                    // Create sphere body and mesh
-                    var sphereMetadata = {
-                        date: date,
-                        category: category,
-                        payments: numPayments,
-                        avg: cube.avg,
-                        gender: cube.hash.substring(0,1),
-                        age: cube.hash.substring(2),
-                        landed: false,
-                        isData: true
-                    };
-                    config[3] = spheres_mask;
-                    config[4] = all_mask;
-                    bodys[i] = new OIMO.Body({
-                        name: 'sphere-' + i,
-                        type:'sphere',
-                        size:[w*0.5],
-                        pos:[x,y,z],
-                        move:true,
-                        sleeping: false,
-                        world:world,
-                        metadata: sphereMetadata,
-                        config: config});
-                    meshs[i] = new THREE.Mesh( geos.sphere, mats['sph.' + category]);
-                    meshs[i].name = i;
-                    meshs[i].userData = sphereMetadata;
-                    meshs[i].scale.set( w*0.5, w*0.5, w*0.5 );           
-                    meshs[i].castShadow = true;
-                    meshs[i].receiveShadow = true;
-                    //scene.add(meshs[i++]);
-                    spheres.add(meshs[i++]);
-                } // bodies                    
-            } // cubes                
+        if(!performaceFactor || (day % performaceFactor) == 0) {
+	    	date = dataset[categories[0]].stats[day].date;
+	        y = (day - fromDay + 1) * yGapBetweenDays;
+	        for (var categoryIdx = 0; categoryIdx < categories.length; categoryIdx++) {
+	        //for (var categoryIdx = 0; categoryIdx < 1; categoryIdx++) {
+	            var category = categories[categoryIdx];
+	            var cubesByCategoryAndDay = dataset[category].stats[day].cube;
+	            
+	            for (var cubeIdx = 0; cubeIdx < cubesByCategoryAndDay.length; cubeIdx++) {
+	                var cube = cubesByCategoryAndDay[cubeIdx];
+	
+	                var numBodiesPerCube =
+	                    Math.floor(cube.num_payments / paymentsPerSphere) +
+	                    ((cube.num_payments % paymentsPerSphere > 0) ? 1 : 0);
+	                
+	                for (var j = 0; j < numBodiesPerCube; j++) {
+	                    x = -100 + Math.random()*200;
+	                    z = -100 + Math.random()*200;
+			    w = Math.min((1 + Math.floor(cube.avg / paymentBucket)) * radioPerPaymentBucket, maxRadius);                    
+	                    var numPayments = (((j + 1) * paymentsPerSphere) > cube.num_payments) ?
+	                        cube.num_payments % paymentsPerSphere :
+	                        paymentsPerSphere;
+	                    
+	                    // Create sphere body and mesh
+	                    var sphereMetadata = {
+	                        date: date,
+	                        category: category,
+	                        payments: numPayments,
+	                        avg: cube.avg,
+	                        gender: cube.hash.substring(0,1),
+	                        age: cube.hash.substring(2),
+	                        landed: false,
+	                        isData: true
+	                    };
+	                    config[3] = spheres_mask;
+	                    config[4] = all_mask;
+	                    bodys[i] = new OIMO.Body({
+	                        name: 'sphere-' + i,
+	                        type:'sphere',
+	                        size:[w*0.5],
+	                        pos:[x,y,z],
+	                        move:true,
+	                        sleeping: false,
+	                        world:world,
+	                        metadata: sphereMetadata,
+	                        config: config});
+	                    meshs[i] = new THREE.Mesh( geos.sphere, mats['sph.' + category]);
+	                    meshs[i].name = i;
+	                    meshs[i].userData = sphereMetadata;
+	                    meshs[i].scale.set( w*0.5, w*0.5, w*0.5 );           
+	                    meshs[i].castShadow = true;
+	                    meshs[i].receiveShadow = true;
+	                    //scene.add(meshs[i++]);
+	                    spheres.add(meshs[i++]);
+	                } // bodies                    
+	            } // cubes     
+        	}
         } // categories
     } // days
 
@@ -909,10 +915,26 @@ function removeInspectorInfo() {
 	inspectorGroup = null
 }
 
+
+var inspectorBoxHeight = 40
+var inspectorBoxboxWidth = 20
+var inspectorBoxdeltaX = 18
+var inspectorBoxdeltaY = 6.7
 function buildInspectorInfo(metadata) {
 	removeInspectorInfo()
 	inspectorGroup = new THREE.Group();
 	inspectorGroup.add(buildInspectorInfoMetadataLabels(metadata))
+	
+	
+	var inspectorMat = new THREE.MeshBasicMaterial( { color: 0x000000, transparent:true, opacity:0.7} )
+	var inspectorGeometry = new THREE.BoxGeometry(inspectorBoxHeight,inspectorBoxboxWidth,0.1)
+	var mesh = new THREE.Mesh(inspectorGeometry, inspectorMat)
+	mesh.position.x = inspectorPositionX + inspectorBoxdeltaX
+	mesh.position.y = inspectorPositionY - inspectorBoxdeltaY
+	mesh.position.z = inspectorPositionZ
+	
+	inspectorMesh = mesh
+	inspectorGroup.add(mesh)
 	scene.add(inspectorGroup)
 }
 
@@ -928,11 +950,11 @@ function buildInspectorInfoMetadataLabels(metadata) {
 	var texts = new THREE.Object3D();   
     var fields = {
     		'date': {name: 'Date', formatterFunction:dateAsString},
+    		'gender': {name: 'Gender', formatterFunction: genderAsString},
+    		'age': {name: 'Age', formatterFunction: ageAsString},
     		'category': {name: 'Category', formatterFunction: cagetoryAsString},
     		'payments': {name: 'Number of payments', formatterFunction:null},
     		'avg': {name: 'Avg. payment', formatterFunction:avgAsString},
-    		'gender': {name: 'Gender', formatterFunction: genderAsString},
-    		'age': {name: 'Age', formatterFunction: ageAsString}
     	}
     var fieldIndex = 0
     for(fieldName in fields) {
@@ -941,7 +963,7 @@ function buildInspectorInfoMetadataLabels(metadata) {
     	fieldValue = fieldInfo.formatterFunction ? fieldInfo.formatterFunction.call(null, fieldValue) : fieldValue
     			
     	var textPosition = [inspectorPositionX, inspectorPositionY - fieldIndex *inspectorPositionDeltaY , inspectorPositionZ]
-    	texts.add(buildAxisText(fieldInfo.name + ': ' + fieldValue, inspectorTextColor, textPosition , [0, 0, 0]));
+    	texts.add(buildAxisText(fieldInfo.name + ': ' + fieldValue, inspectorTextColor, textPosition , [0, 0, 0], inspectorTextHeight));
     	fieldIndex++
     }
 	return texts
@@ -1008,11 +1030,12 @@ function buildCubeLabels(position, labels, length) {
     return texts;
 }
 
-function buildAxisText(text, colorHex, position, rotation) {
+function buildAxisText(text, colorHex, position, rotation, textHeight) {
     var textMaterial = new THREE.MeshBasicMaterial({ color: colorHex, overdraw: 0.5 });
+    textHeight = textHeight || captionTextHeight
     var text3d = new THREE.TextGeometry(text, {
-	size: captionTextHeight,
-	height: captionTextHeight * 0.1,
+	size: textHeight,
+	height: textHeight * 0.1,
 	curveSegments: 2,
 	font: "helvetiker"
     });
@@ -1391,7 +1414,7 @@ function initMenu() {
     
     labMenu.addMenuSelect(statusMenuSelect)
     
-    var filtersOrder = isMobile ? [[0,1,2,3,4,5]] : [[0,1], [2,3], [4,5]] 
+    var filtersOrder = isMobile ? [[0,1,2,3], [4,5]] : [[0,1], [2,3], [4,5]] 
     
     for(var filtersIndex = 0; filtersIndex < filtersOrder.length; filtersIndex ++) {
     	var filtersMenuSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(filtersIndex + 1 ))
@@ -1410,7 +1433,7 @@ function initMenu() {
     	labMenu.addMenuSelect(filtersMenuSelect)
     }
     
-    var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(4))
+    var statsSelect = labMenu.createMenuSelect('', buildPositionForMenuByRowIndex(1 + filtersIndex))
     var statsMenuItem = labMenu.createActionMenuItem('img/menu/statsCube.png', 'img/menu/statsCube_checked.png', null, function() {
     	toggleStatsCubeInfo()
     })
@@ -1437,21 +1460,48 @@ function buildCheckedImageNameByFilterId(filterId) {
 }
 
 function initLogo() {
-	var texture = new THREE.ImageUtils.loadTexture( 'img/osocoLogo.png' )
-	var imgGeometry = new THREE.PlaneBufferGeometry(3,1)
-	var imgMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide, transparent: false, color: 0xFFFFFF});
-	var mesh = new THREE.Mesh(imgGeometry, imgMaterial)
-	mesh.position.x = 10000;
-	scene.add(mesh)
-	osocoLogo = mesh
+	
+	var osocoText1 = buildAxisText("OSOCO", 0xFF6600, [0,0,0], [0,0,0], 0.75)
+	var osocoText2 = buildAxisText("powered  by", 0xFF6600, [0,0,0], [0,0,0], 0.5)
+	scene.add(osocoText1)
+	scene.add(osocoText2)
+	osocoLogoText1 = osocoText1
+	osocoLogoText2 = osocoText2
+}
+
+function buildAxisText(text, colorHex, position, rotation, textHeight) {
+    var textMaterial = new THREE.MeshBasicMaterial({ color: colorHex, overdraw: 0.5 });
+    textHeight = textHeight || captionTextHeight
+    var text3d = new THREE.TextGeometry(text, {
+	size: textHeight,
+	height: textHeight * 0.1,
+	curveSegments: 2,
+	font: "helvetiker"
+    });
+        
+    var textMesh = new THREE.Mesh(text3d, textMaterial);
+        
+    textMesh.position.x = position[0];
+    textMesh.position.y = position[1];
+    textMesh.position.z = position[2];
+    
+    textMesh.rotation.x = rotation[0];
+    textMesh.rotation.y = rotation[1];
+    textMesh.rotation.z = rotation[2];    
+    
+    return textMesh;
 }
 
 function loop() {
 	if(labOpen) {
 		vrControls.update();
 		labMenu.updateAll();
-		if(osocoLogo) {
-			THREE.putElementInFrontOfCamera(camera, osocoLogo, {x:10, y:10, z:-25})
+		if(osocoLogoText1 && osocoLogoText2) {
+			THREE.putElementInFrontOfCamera(camera, osocoLogoText1, osocoLogoText1Place)
+			THREE.putElementInFrontOfCamera(camera, osocoLogoText2, osocoLogoText2Place)
+		}
+		if(inspectorGroup) {
+			THREE.putElementInFrontOfCamera(camera, inspectorGroup, inspectorPlace)
 		}
 		labVrEffect.render(scene, camera);
 		requestAnimationFrame( loop );
