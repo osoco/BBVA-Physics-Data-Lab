@@ -1456,7 +1456,7 @@ function buildCheckedImageNameByFilterId(filterId) {
 
 function initLogo() {
 	var texture = new THREE.ImageUtils.loadTexture( 'img/osocoLogo.png' )
-	var imgGeometry = new THREE.PlaneBufferGeometry(3,1)
+	var imgGeometry = new THREE.PlaneBufferGeometry(3,2)
 	var imgMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide, transparent: false, color: 0xFFFFFF});
 	var mesh = new THREE.Mesh(imgGeometry, imgMaterial)
 	mesh.position.x = 10000;
@@ -1470,7 +1470,7 @@ function loop() {
 		vrControls.update();
 		labMenu.updateAll();
 		if(osocoLogo) {
-			THREE.putElementInFrontOfCamera(camera, osocoLogo, {x:10, y:10, z:-25})
+			THREE.putElementInFrontOfCamera(camera, osocoLogo, {x:10, y:-10, z:-25})
 		}
 		if(inspectorGroup) {
 			THREE.putElementInFrontOfCamera(camera, inspectorGroup, threePlace)
