@@ -136,8 +136,8 @@ var vertices = {};
 var cubeJoints = [];
 var osocoLogoText1
 var osocoLogoText2
-var osocoLogoText1Place = isMobile ? {x:3, y:-5, z:-25} : {x:10, y:-10, z:-25}
-var osocoLogoText2Place = isMobile ? {x:3, y:-4, z:-25} : {x:10, y:-9, z:-25}
+var osocoLogoText1Place = isMobile ? {x:11, y:-11, z:-50} : {x:10, y:-10, z:-25}
+var osocoLogoText2Place = isMobile ? {x:11, y:-10, z:-50} : {x:10, y:-9, z:-25}
 
 function init() {
     // camera
