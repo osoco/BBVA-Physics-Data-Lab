@@ -573,7 +573,7 @@ var raycasting = function () {
 	if(inspectorActivated && raycastingAttemps == 0) {
 
 		var vector = new THREE.Vector3( 0, 0, 1 );
-        projector.unprojectVector( vector, camera );
+        vector.unproject(camera );
         raycaster.set( camera.position, vector.sub(camera.position).normalize());
         var intersects = raycaster.intersectObjects(spheres.children, true);
         if (intersects.length > 0) {
