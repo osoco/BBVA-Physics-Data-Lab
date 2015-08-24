@@ -118,7 +118,7 @@ THREE.putElementInFrontOfCamera = function (camera, element, place) {
 
 		function rayTest(menuSelect) {
 			var vector = new THREE.Vector3( 0, 0, 1 );
-			projector.unprojectVector( vector, camera );
+			vector.unproject(camera);
 			raycaster.set( camera.position, vector.sub(camera.position).normalize());
 			var intersects = raycaster.intersectObjects( menuSelect.threeMenuItems.children);
 
@@ -303,7 +303,7 @@ THREE.putElementInFrontOfCamera = function (camera, element, place) {
 		function createMeshForMenuItem(menuItem) {
 			var texture = new THREE.ImageUtils.loadTexture( menuItem.imageUrl )
 			//var imgGeometry = new THREE.SphereGeometry(400, 100,100);
-			var imgGeometry = new THREE.PlaneGeometry(menuItemSize,menuItemSize)
+			var imgGeometry = new THREE.PlaneBufferGeometry(menuItemSize,menuItemSize)
 
 			menuItem.unselectedMaterial = buildMenuMaterial(texture, UNSELECTED_COLOR)
 			menuItem.preSelectedMaterial = buildMenuMaterial(texture,PRESELECTED_COLOR)
