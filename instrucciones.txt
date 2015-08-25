@@ -1,0 +1,20 @@
+-Es posible que cuando se conecten todos los elementos sea necesario volver a configurar las pantallas.
+Configuraremos los monitores como escritorio extendido.
+El único caso raro es el de las oculus, que hay que ponerle en posición "Horizontal(volteado)"
+
+-Una vez hecho esto abrimos el acceso directo del laboratorio con firefox nightly.
+Es posible que en alguna ocasión al abrirlo no lo veamos. Eso es porque se coloca en el escritorio de las oculus.
+Llevamos esta ventana al escritorio de las oculus si no lo está ya y pulsamos f11 para ir a la pantalla completa.
+
+-Abrimos el Open Broadcaster Software.
+  Por motivos de rendimiento, en configuración -> avanzazo -> general hay que marcar "Desactivar la codificación mientras se previsualiza"
+  En el textarea de abajo "fuentes", hacemos click derecho y pulsamos agregar. En la pantalla que sale seleccionamos
+la ventana del laboratorio, ventana interior.
+  A continuación le damos a "Iniciar previsualizacización" del menú inferior derecho indicando que capture la ventana interna.
+  Por último, con botón derecho en la previsualización le indicamos en que monitor queremos verlo.
+
+-Movemos la ventana del firefox al escritorio de las oculus y pulsamos f11.
+
+-Por último abrimos el pdf explicativo y lo ponemos en tamaño completo en el escritorio que queda libre.
+
+-Para que funcione el leap motion ("las manos") es necesario dejar el foco haciendo click en la ventana del firefox nightly que está en las oculus.
