@@ -9,7 +9,7 @@ Llevamos esta ventana al escritorio de las oculus si no lo está ya y pulsamos f
 -Abrimos el Open Broadcaster Software.
   Por motivos de rendimiento, en configuración -> avanzazo -> general hay que marcar "Desactivar la codificación mientras se previsualiza"
   En el textarea de abajo "fuentes", hacemos click derecho y pulsamos agregar. En la pantalla que sale seleccionamos
-la ventana del laboratorio, ventana interior.
+la ventana del laboratorio, ventana interior. Marcamos la opción sub-región y ponemos como tamaño 2400 x 1430.
   A continuación le damos a "Iniciar previsualizacización" del menú inferior derecho indicando que capture la ventana interna.
   Por último, con botón derecho en la previsualización le indicamos en que monitor queremos verlo.
 
