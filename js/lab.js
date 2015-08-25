@@ -1203,7 +1203,8 @@ function createBodyFromMesh(mesh) {
 			pos	: mesh.position.toArray(),
 			rot	: mesh.rotation.toArray().slice(0,3).map(radianToDegree),
 			world	: world,
-			move	: true
+			move	: true,
+			config: [100, 100]
 		}
 		// actually build the OIMO.Body
 	} else {
@@ -1216,9 +1217,9 @@ function createBodyFromMesh(mesh) {
 			],
 			pos	: mesh.position.toArray(),
 			world	: world,
-			move	: true
+			move	: true,
+			config: [10, 10]
 		}
-		console.log(options.size)
 	}
 	var body	= new OIMO.Body(options)
 	return body
