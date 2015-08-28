@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <title>BBVA Physics Data Lab</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>BBVA Physics Data Lab</h1>
+        <h2>Instrucciones de set-up</h2>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h3>
+            <a id="resumen" class="anchor" href="#resumen" aria-hidden="true"><span class="octicon octicon-link"></span></a>Glosario</h3>
+          <p>
+            <ul>
+            <li>
+            <b>Firefox nightly:</b> es un navegador creado por mozilla para dar soporte a las funcionalidades de realidad virtual. Es necesario para el correcto funcionamiento del Data-Lab.
+            </li>
+            
+            <li>
+            <b>Open Broadcaster Software:</b> es un software que se utiliza para capturar las imágenes de una ventana o monitor. Permite guardarlo en vídeo y transmitirlo por streaming. 
+            Nosotros lo usaremos de forma mínima para poder previsualizar lo que se ve en las oculus en un monitor o proyector externo.
+            </li>
+            
+            <li>
+            <b>Laboratorio:</b> aplicación basada en HTML y Javascript que permite mostrar en realidad virtual diferentes datos de compras procedentes del api de Big Data de BBVA.
+            </li>
+            
+            <li>
+            <b>Oculus:</b> permitiran ver el laboratorio en un entorno tridimensional.
+            </li>
+            
+            <li>
+            <b>Leap Motion:</b> Dispositivo que permite capturar nuestras manos para interactuar en general con el ordenador y en particular con la aplicación del laboratorio.
+            </li>
+            </ul>
+            
+            
+          <h3>
+            <a id="resumen" class="anchor" href="#resumen" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pasos previos al set-up</h3>
+            <ul>
+            <li>
+              Es necesario conectar todos los elementos: Oculus, Leap Motion y monitor externo al equipo.
+              Si es la primera vez que se realiza esta operación será necesario instalar los controladores de estos elementos, que se puden encontrar en sus páginas web.
+            </li>
+            <li>
+              Si no está configurado ya, será necesario también establecer la correcta configuración de los monitores (Las oculus son detectadas como un monitor más).
+              Haciendo click derecho en el escritorio y pinchando en resolución de pantallas lo podremos configurar.
+              Los tres monitores han de estar configurados con la opción "Extender escritorio a esta pantalla".
+              En el caso particular de las Oculus, ademas es necesario ponerle posicion Horizontal(volteado).
+            </li>
+            </ul>
+            
+            
+            <h3>
+            <a id="resumen" class="anchor" href="#resumen" aria-hidden="true"><span class="octicon octicon-link"></span></a>Firefox Nighly y laboratorio</h3>
+            <ul>
+            <li>
+              Es la primera acción que debemos realizar. Abriremos con Firefox Nightly el acceso directo del laboratorio (llamado lab), que se encuentra en la raíz de la carpeta proporcionada.
+            </li>
+            <li>
+              Moveremos esta nueva ventana al monitor de las oculus. Una vez movido a el pulsaremos f11 para ponerlo en pantalla completa. Es posible que se abra directamente en las Oculus y ya en pantalla completa, 
+              por lo que es posible que no tengamos que mover nada.
+            </li>
+            <li>
+              Nos ponemos las oculus y probamos que está funcionando. Si no es así revisar los dos pasos anteriores.
+            </li>
+             <li>
+              <b>Importante:</b>Para que funcione el Leap Motion (se vean las manos), es necesario que esta ventana tenga el foco. Lo conseguimos poniendo el puntero del ratón encima de dicha ventana y haciendo click.
+            </li>
+            </ul>
+            
+            <h3>
+            <a id="resumen" class="anchor" href="#resumen" aria-hidden="true"><span class="octicon octicon-link"></span></a>Open Broadcaster Software(OBS)</h3>
+            <ul>
+            <li>
+              Abrimos (si es necesario instalamos antes) este programa. En el equipo proporcionado tiene un acceso directo en el propio raíz de la carpeta proporcionada.
+            </li>
+            <li>
+              Si es la primera vez que se configura deberemos seguir los siguientes pasos. En caso contrario pasaremos directamente a los dos últimos pasos.
+            </li>
+            <li>
+              Por motivos de rendimiento es necesario marcar "Desactivar la codificación mientras se previsualiza". Podemos acceder a esa información a traves del menú superior.
+              Pincharemos en Configuración -> avanzazo -> general. 
+            </li>
+            <li>
+              En el cuadro de texto inferior izquierdo (Escenas) haremos click derecho y marcaremos agregar escena. En el pop-up que nos pide el nombre ponemos(por ejemplo) laboratorio.
+            </li>
+            <li>
+              En el cuadro de texto que esta inmediatamente a la derecha del anterior haremos de nuevo click derecho -> Agregar -> Captura de ventana. A continuación indicaremos un nombre, por ejemplo, lab.
+              Nos abrirá una ventana de configuración. Es importante marcar 3 campos. En primer lugar en el desplegable de ventana, seleccionaremos la correspondiente al Firefox Nightly que está ejecutando el laboratorio.
+              En el botón de radio inmediatamente inferior, seleccionaremos "ventana interior". Por último marcamos el checkbox "Sub-Región".Indicaremos el tamaño de 2400 x 1430. Pulsamos aceptar. 
+            </li>
+            <li>
+               En el mismo cuadro de fuentes, seleccionamos la nueva opción lab. Pulsamos en los botonos de la esquina inferior derecha "Iniciar previsualización".
+               Volvemos a hacer click derecho en la opción lab de fuentes, y en la opción "Posición/Tamaño" marcamos la opción "Ajustar a pantalla".
+               En este paso debemos ver la previsualización de las oculus en este programa.                
+            </li>
+            <li>
+               Realizamos click derecho en la pantalla de previsualización. En proyector indicamos en que monitor queremos poner la previsualización.
+            </li>
+            </ul>
+             
+            <h3>
+            <a id="resumen" class="anchor" href="#resumen" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pdf explicativo</h3>
+            <ul>
+            <li>
+            Se incluye también un pdf explicativo que se puede colocar en un tercer monitor indicando las instrucciones. En la raíz del directorio proporcionado se en cuentra con el nombre VRDataLab_Brochure.
+            </li>
+            </ul>
+          
+          <h3>
+            <a id="resumen" class="anchor" href="#resumen" aria-hidden="true"><span class="octicon octicon-link"></span></a>Posibles problemas</h3>
+          <ul>
+            <li>
+              <b>No funciona el Leap Motion en el laboratorio:</b> Para que el laboratorio pueda acceder a los datos recogidos por el Leap Motion y mostrar las manos es necesario que esa ventana tenga el foco.
+              Eso se consigue poniendo el puntero del ratón encima de dicha ventana y haciendo click. 
+            </li>
+            <li>
+              <b>El laboratorio funciona muy despacio:</b> Hay que tener especial cuidado de no ejecutar más cosas de las necesarias para usar el laboratorio, ya que tiene
+              una carga en la CPU elevada. Es posible que por error esté abierto el laboratorio en más de una pestaña de Firefox Nightly, con la consiguiente penalización de rendimiento.
+            </li>
+            <li>
+              <b>No se captura la imagen en el OBS:</b> Hacer click derecho en la fuente lab -> propiedades. Revisar que la configuración es la indicada en las instrucciones, teniendo especial atención en que la ventana seleccionada es la correcta. 
+            </li>
+            </ul>
+          
+        </section>
+      </div>
+    </div>
+  
+  </body>
+</html>
